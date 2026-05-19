@@ -44,7 +44,7 @@ function DayMap({ points, color }) {
         attributionControl={false}
         style={{ height: "210px", width: "100%" }}
       >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+        <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}" />
         <MapFitter positions={positions} />
         {positions.length > 1 && (
           <Polyline positions={positions} color={color} weight={2.5} opacity={0.75} />
