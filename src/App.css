@@ -158,6 +158,9 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  order: 10;
+  flex: 0 0 100%;
+  padding-bottom: 2px;
 }
 
 .weather {
@@ -409,15 +412,19 @@ body {
   to   { transform: translateY(0); }
 }
 
-/* cosmetic pill handle at top of sheet */
-.modal::before {
-  content: '';
-  display: block;
+.modal-drag-zone {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.modal-pill {
   width: 36px;
   height: 4px;
   background: var(--border);
   border-radius: 2px;
-  margin: 10px auto 0;
+  margin: 10px auto 6px;
 }
 
 .modal-header {
@@ -796,7 +803,8 @@ body {
     animation: modal-in 0.16s ease;
   }
 
-  .modal::before { display: none; }
+  .modal-drag-zone { cursor: default; }
+  .modal-pill { display: none; }
 
   @keyframes modal-in {
     from { opacity: 0; transform: scale(0.96) translateY(10px); }

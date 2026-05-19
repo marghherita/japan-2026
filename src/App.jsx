@@ -328,9 +328,51 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
   );
 }
 
+// ── swipe-to-dismiss hook ────────────────────────────────────────────────────
+
+function useSwipeDismiss(onDismiss) {
+  const modalRef = useRef(null);
+  const drag = useRef(null);
+
+  const onPointerDown = (e) => {
+    if (window.innerWidth >= 600) return;
+    drag.current = { startY: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    const dy = Math.max(0, e.clientY - drag.current.startY);
+    if (modalRef.current) {
+      modalRef.current.style.transition = "none";
+      modalRef.current.style.transform = `translateY(${dy}px)`;
+    }
+  };
+
+  const onPointerUp = (e) => {
+    if (!drag.current) return;
+    const dy = Math.max(0, e.clientY - drag.current.startY);
+    drag.current = null;
+    if (dy > 120) {
+      if (modalRef.current) {
+        modalRef.current.style.transition = "transform 0.28s cubic-bezier(0.32,0.72,0,1)";
+        modalRef.current.style.transform = "translateY(110%)";
+      }
+      setTimeout(onDismiss, 260);
+    } else if (modalRef.current) {
+      modalRef.current.style.transition = "transform 0.3s cubic-bezier(0.32,0.72,0,1)";
+      modalRef.current.style.transform = "translateY(0)";
+    }
+  };
+
+  return { modalRef, dragProps: { onPointerDown, onPointerMove, onPointerUp } };
+}
+
 // ── activity modal ───────────────────────────────────────────────────────────
 
 function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays, currentDayKey }) {
+  const { modalRef, dragProps } = useSwipeDismiss(onCancel);
+
   const handleKey = (e) => {
     if (e.key === "Enter") { e.preventDefault(); onSave(); }
   };
@@ -346,9 +388,12 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop" />
-        <Dialog.Content className="modal" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <div className="modal-header">
-            {isNew ? "Nuova attività" : "Modifica attività"}
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="modal-drag-zone" {...dragProps}>
+            <div className="modal-pill" />
+            <div className="modal-header">
+              {isNew ? "Nuova attività" : "Modifica attività"}
+            </div>
           </div>
           <div className="modal-body">
             <div className="modal-field">
@@ -429,12 +474,17 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
 // ── checklist ────────────────────────────────────────────────────────────────
 
 function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
+  const { modalRef, dragProps } = useSwipeDismiss(onCancel);
+
   return (
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop" />
-        <Dialog.Content className="modal" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="modal-drag-zone" {...dragProps}>
+            <div className="modal-pill" />
+            <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
+          </div>
           <div className="modal-body">
             <div className="modal-field">
               <label>Voce</label>
@@ -672,10 +722,10 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div>
-          <h1>Janap 2026</h1>
+          <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
+          <p className="header-sub">Osaka · Kobe · Kyoto · Uji · Nara · Tokyo</p>
           <p className="header-sub">
-            Osaka · Kobe · Kyoto · Uji · Nara · Tokyo &nbsp;·&nbsp; 24 mag – 5 giu 2026
-            &nbsp;·&nbsp; <span className={weatherUpdatedAt ? "weather-live" : "weather-loading"}>{weatherLabel}</span>
+            24 mag – 5 giu 2026 &nbsp;·&nbsp; <span className={weatherUpdatedAt ? "weather-live" : "weather-loading"}>{weatherLabel}</span>
           </p>
         </div>
         <div className="legend">
