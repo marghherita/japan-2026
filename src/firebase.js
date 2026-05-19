@@ -30,3 +30,15 @@ export const loadAlerts = () =>
 
 export const saveAlerts = (data) =>
   set(ref(db, "alerts"), JSON.parse(JSON.stringify(data)));
+
+export const loadJollies = () =>
+  get(ref(db, "jollies")).then((snap) => snap.val() ?? {});
+
+export const saveJollies = (data) =>
+  set(ref(db, "jollies"), JSON.parse(JSON.stringify(data)));
+
+export const loadJollyApplications = () =>
+  get(ref(db, "jollyApplications")).then((snap) => snap.val() ?? {});
+
+export const saveJollyApplications = (data) =>
+  set(ref(db, "jollyApplications"), JSON.parse(JSON.stringify(data)));

@@ -13,7 +13,7 @@ import { sections, tagColors, badgeStyles } from "./data";
 import { checklistCategories } from "./checklistData";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
-import { loadItinerary, saveItinerary, loadChecklist, saveChecklist, loadAlerts, saveAlerts } from "./firebase";
+import { loadItinerary, saveItinerary, loadChecklist, saveChecklist, loadAlerts, saveAlerts, loadJollies, saveJollies } from "./firebase";
 import * as Dialog from "@radix-ui/react-dialog";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -488,12 +488,12 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop" />
-        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()} aria-describedby={undefined}>
           <div className="modal-drag-zone" {...dragProps}>
             <div className="modal-pill" />
-            <div className="modal-header">
+            <Dialog.Title className="modal-header">
               {isNew ? "Nuova attività" : "Modifica attività"}
-            </div>
+            </Dialog.Title>
           </div>
           <div className="modal-body">
             <div className="modal-field">
@@ -588,10 +588,10 @@ function AlertEditModal({ current, onSave, onCancel, onRemove }) {
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop" />
-        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()} aria-describedby={undefined}>
           <div className="modal-drag-zone" {...dragProps}>
             <div className="modal-pill" />
-            <div className="modal-header">{current ? "Modifica nota" : "Aggiungi nota"}</div>
+            <Dialog.Title className="modal-header">{current ? "Modifica nota" : "Aggiungi nota"}</Dialog.Title>
           </div>
           <div className="modal-body">
             <div className="modal-field">
@@ -629,6 +629,145 @@ function AlertEditModal({ current, onSave, onCancel, onRemove }) {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+// ── day picker modal ─────────────────────────────────────────────────────────
+
+function DayPickerModal({ allDays, activity, onPick, onCancel }) {
+  const { modalRef, dragProps } = useSwipeDismiss(onCancel);
+  return (
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="modal-backdrop" />
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()} aria-describedby={undefined}>
+          <div className="modal-drag-zone" {...dragProps}>
+            <div className="modal-pill" />
+            <Dialog.Title className="modal-header">Inserisci in una giornata</Dialog.Title>
+          </div>
+          <div className="modal-body">
+            <div className="jolly-activity-preview">
+              <span className="time">{activity?.time}</span>
+              <span className="row-text">{activity?.text}</span>
+            </div>
+            <div className="jolly-day-list">
+              {allDays.map((d) => (
+                <button key={d.key} className="jolly-day-item" onClick={() => onPick(d.key)}>
+                  {formatDayOption(d)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+// ── jolly section ─────────────────────────────────────────────────────────────
+
+function JollySection({ jollies, onChange, allDays, onInsert }) {
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editVals, setEditVals] = useState({});
+  const [isNew, setIsNew] = useState(false);
+  const [insertingId, setInsertingId] = useState(null);
+  const jollyList = Object.entries(jollies ?? {});
+
+  const openAdd = () => {
+    setEditingId(`jolly_${Date.now()}`);
+    setEditVals({ time: "09:00", text: "", note: "", tags: [] });
+    setIsNew(true);
+    setOpen(true);
+  };
+
+  const openEdit = (id) => {
+    const a = jollies[id];
+    setEditingId(id);
+    setEditVals({ time: a.time ?? "09:00", text: a.text ?? "", note: a.note ?? "", tags: a.tags ?? [] });
+    setIsNew(false);
+  };
+
+  const saveEdit = () => {
+    if (!editVals.text?.trim()) { cancelEdit(); return; }
+    onChange({
+      ...(jollies ?? {}),
+      [editingId]: {
+        time: editVals.time?.trim() || "09:00",
+        text: editVals.text.trim(),
+        note: editVals.note?.trim() || undefined,
+        tags: editVals.tags?.length ? editVals.tags : undefined,
+      },
+    });
+    setEditingId(null);
+    setIsNew(false);
+  };
+
+  const cancelEdit = () => { setEditingId(null); setIsNew(false); };
+
+  const deleteJolly = (id) => {
+    const next = { ...(jollies ?? {}) };
+    delete next[id];
+    onChange(next);
+  };
+
+  return (
+    <div className="jolly-section">
+      {editingId !== null && (
+        <ActivityModal
+          isNew={isNew}
+          editVals={editVals}
+          setEditVals={setEditVals}
+          onSave={saveEdit}
+          onCancel={cancelEdit}
+          allDays={null}
+          currentDayKey={editingId}
+        />
+      )}
+      {insertingId !== null && (
+        <DayPickerModal
+          allDays={allDays}
+          activity={jollies?.[insertingId]}
+          onPick={(dayKey) => { onInsert(insertingId, dayKey); setInsertingId(null); }}
+          onCancel={() => setInsertingId(null)}
+        />
+      )}
+      <button className="cl-head" onClick={() => setOpen((o) => !o)}>
+        <span className="cl-head-left">
+          <span className="cl-head-title">🃏 Attività jolly</span>
+          <span className="cl-head-counter">{jollyList.length} attività</span>
+        </span>
+        <span className="section-chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+      </button>
+      {open && (
+        <div className="jolly-list">
+          {jollyList.map(([id, activity]) => (
+            <div key={id} className="jolly-activity-row">
+              <span className="time">{activity.time}</span>
+              <div className="row-content">
+                <span className="row-text">
+                  {activity.text}
+                  {activity.tags?.map((t) => <Tag key={t} label={t} />)}
+                </span>
+                {activity.note && <div className="row-note"><NoteWithLinks text={activity.note} /></div>}
+              </div>
+              <button
+                className="jolly-insert-btn"
+                onClick={() => setInsertingId(id)}
+                title="Inserisci in una giornata"
+              >+ giornata</button>
+              <ThreeDotMenu onEdit={() => openEdit(id)} onDelete={() => deleteJolly(id)} />
+            </div>
+          ))}
+          <button className="add-row-btn" onClick={openAdd}>
+            <span className="add-row-icon">＋</span> aggiungi attività
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -683,10 +822,10 @@ function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
     <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop" />
-        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()} aria-describedby={undefined}>
           <div className="modal-drag-zone" {...dragProps}>
             <div className="modal-pill" />
-            <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
+            <Dialog.Title className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</Dialog.Title>
           </div>
           <div className="modal-body">
             <div className="modal-field">
@@ -856,6 +995,8 @@ export default function App() {
   const [cardVersions, setCardVersions] = useState({});
   const [alerts, setAlerts] = useState(null);
   const hasAlertsLoaded = useRef(false);
+  const [jollies, setJollies] = useState(null);
+  const hasJolliesLoaded = useRef(false);
 
   const allDays = useMemo(() =>
     sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
@@ -871,6 +1012,9 @@ export default function App() {
     loadAlerts()
       .then((data) => setAlerts(data ?? {}))
       .catch(() => setAlerts({}));
+    loadJollies()
+      .then((data) => setJollies(data ?? {}))
+      .catch(() => setJollies({}));
   }, []);
 
   useEffect(() => {
@@ -891,6 +1035,12 @@ export default function App() {
     saveAlerts(alerts).catch(console.error);
   }, [alerts]);
 
+  useEffect(() => {
+    if (jollies === null) return;
+    if (!hasJolliesLoaded.current) { hasJolliesLoaded.current = true; return; }
+    saveJollies(jollies).catch(console.error);
+  }, [jollies]);
+
   const handleRowsChange = useCallback((key, rows) => {
     setItinerary((prev) => ({ ...prev, [key]: rows }));
   }, []);
@@ -910,6 +1060,30 @@ export default function App() {
   const handleAlertChange = useCallback((dayKey, val) => {
     setAlerts((prev) => ({ ...prev, [dayKey]: val }));
   }, []);
+
+  const handleJolliesChange = useCallback((newJollies) => {
+    setJollies(newJollies);
+  }, []);
+
+  const handleInsertJollyActivity = useCallback((jollyId, dayKey) => {
+    const activity = jollies?.[jollyId];
+    if (!activity) return;
+    const newRow = {
+      ...activity,
+      _id: `${dayKey}-jolly-${Date.now()}`,
+      done: false,
+    };
+    setItinerary((prev) => ({
+      ...prev,
+      [dayKey]: [...(prev?.[dayKey] ?? []), newRow],
+    }));
+    setCardVersions((prev) => ({ ...prev, [dayKey]: (prev[dayKey] ?? 0) + 1 }));
+    setJollies((prev) => {
+      const next = { ...prev };
+      delete next[jollyId];
+      return next;
+    });
+  }, [jollies]);
 
   useEffect(() => {
     const load = () =>
@@ -933,7 +1107,7 @@ export default function App() {
     ? `Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
-  if (itinerary === null || checklist === null || alerts === null) {
+  if (itinerary === null || checklist === null || alerts === null || jollies === null) {
     return <div className="page"><p style={{ padding: "2rem", textAlign: "center" }}>Caricamento…</p></div>;
   }
 
@@ -960,8 +1134,22 @@ export default function App() {
       <main>
         <Countdown />
         <Checklist state={checklist} onChange={handleChecklistChange} />
-{sections.map((s) => (
-          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} allDays={allDays} onMoveRow={handleMoveRow} cardVersions={cardVersions} alerts={alerts} onAlertChange={handleAlertChange} />
+        <JollySection jollies={jollies} onChange={handleJolliesChange} allDays={allDays} onInsert={handleInsertJollyActivity} />
+        {sections.map((s) => (
+          <Section
+            key={s.id}
+            section={s}
+            activeSection={activeSection}
+            onToggle={toggle}
+            weatherData={weatherData}
+            itinerary={itinerary}
+            onRowsChange={handleRowsChange}
+            allDays={allDays}
+            onMoveRow={handleMoveRow}
+            cardVersions={cardVersions}
+            alerts={alerts}
+            onAlertChange={handleAlertChange}
+          />
         ))}
       </main>
 
