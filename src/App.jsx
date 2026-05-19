@@ -514,7 +514,7 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
                 placeholder="es. Visita al Fushimi Inari…"
                 onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
                 onKeyDown={handleKey}
-                autoFocus
+
               />
             </div>
             <div className="modal-row">
@@ -637,7 +637,7 @@ function AlertEditModal({ current, onSave, onCancel, onRemove }) {
                 placeholder="es. Prenotazione richiesta, portare ombrello…"
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (text.trim()) onSave({ type, text: text.trim() }); } }}
-                autoFocus
+
               />
             </div>
           </div>
@@ -861,7 +861,7 @@ function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
                 placeholder="es. Passaporto, adattatore prese…"
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSave(); } }}
-                autoFocus
+
               />
             </div>
           </div>
