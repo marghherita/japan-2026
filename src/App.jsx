@@ -20,6 +20,12 @@ import * as Dialog from "@radix-ui/react-dialog";
 
 const MONTHS = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
 
+const withTimeout = (promise, ms = 8000) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms)),
+  ]);
+
 function formatDayOption(day) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day.key)) return day.label;
   const d = new Date(day.key + 'T12:00:00');
@@ -1022,16 +1028,16 @@ export default function App() {
   []);
 
   useEffect(() => {
-    loadItinerary()
+    withTimeout(loadItinerary())
       .then((data) => setItinerary(data ?? {}))
       .catch(() => setItinerary({}));
-    loadChecklist()
+    withTimeout(loadChecklist())
       .then((data) => setChecklist(data ?? {}))
       .catch(() => setChecklist({}));
-    loadAlerts()
+    withTimeout(loadAlerts())
       .then((data) => setAlerts(data ?? {}))
       .catch(() => setAlerts({}));
-    loadJollies()
+    withTimeout(loadJollies())
       .then((data) => setJollies(data ?? {}))
       .catch(() => setJollies({}));
   }, []);
@@ -1127,7 +1133,16 @@ export default function App() {
     : "Caricamento meteo…";
 
   if (itinerary === null || checklist === null || alerts === null || jollies === null) {
-    return <div className="page"><p style={{ padding: "2rem", textAlign: "center" }}>Caricamento…</p></div>;
+    return (
+      <div className="page">
+        <div className="loading-screen">
+          <p className="loading-text">Caricamento…</p>
+          <button className="loading-retry" onClick={() => window.location.reload()}>
+            Riprova
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
