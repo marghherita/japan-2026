@@ -92,7 +92,7 @@ function HourlyStrip({ slots }) {
 
 // ── sortable row ─────────────────────────────────────────────────────────────
 
-function SortableRow({ id, row, idx, startEdit, deleteRow }) {
+function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -102,8 +102,14 @@ function SortableRow({ id, row, idx, startEdit, deleteRow }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="row">
-      <span className="drag-handle" {...attributes} {...listeners}>⠿</span>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`row${row.done ? " row-done" : ""}`}
+      onClick={() => onToggleDone(idx)}
+      title={row.done ? "Segna come non fatto" : "Segna come fatto"}
+    >
+      <span className="drag-handle" {...attributes} {...listeners} onClick={(e) => e.stopPropagation()}>⠿</span>
       <span className="time">{row.time}</span>
       <div className="row-content">
         <span className="row-text">
@@ -206,6 +212,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
     setEditIdx(null);
   };
   const deleteRow = (i) => setRows((prev) => prev.filter((_, idx) => idx !== i));
+  const toggleDone = (i) => setRows((prev) => prev.map((row, idx) => idx === i ? { ...row, done: !row.done } : row));
 
   const addRow = () => {
     const lastTime = rows[rows.length - 1]?.time ?? "09:00";
@@ -239,6 +246,17 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
           {badge.label}
         </span>
         <span className="day-title">{day.title}</span>
+        {(() => {
+          const done = rows.filter((r) => r.done).length;
+          const total = rows.length;
+          if (done === 0) return null;
+          const all = done === total;
+          return (
+            <span className="day-progress" style={{ color: all ? "#22C55E" : "#F59E0B" }}>
+              {done}/{total}
+            </span>
+          );
+        })()}
         <span className="weather">{weather}</span>
         <span className="chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
           ▾
@@ -265,6 +283,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
                   idx={i}
                   startEdit={startEdit}
                   deleteRow={deleteRow}
+                  onToggleDone={toggleDone}
                 />
               ))}
             </SortableContext>
@@ -615,7 +634,7 @@ export default function App() {
 
       <main>
         <Checklist state={checklist} onChange={handleChecklistChange} />
-        {sections.map((s) => (
+{sections.map((s) => (
           <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} />
         ))}
       </main>

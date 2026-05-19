@@ -276,6 +276,24 @@ body {
 
 .row:last-child { margin-bottom: 0; }
 
+.row { cursor: pointer; }
+
+.row-done {
+  background: #f0fdf4;
+}
+
+.row-done .time { color: #86b894; }
+.row-done .row-text { color: #86b894; text-decoration: line-through; }
+.row-done .tag { opacity: 0.5; }
+.row-done .row-note { color: #a3c9ac; }
+
+.day-progress {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
 .drag-handle {
   font-size: 13px;
   color: var(--text-tertiary);
