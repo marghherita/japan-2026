@@ -105,6 +105,31 @@ function Alert({ type, text }) {
   return <div className={`alert alert-${type}`}>{text}</div>;
 }
 
+function NoteWithLinks({ text }) {
+  const parts = [];
+  const re = /https?:\/\/[^\s]+/g;
+  let last = 0;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    parts.push(
+      <a
+        key={m.index}
+        href={m[0]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="note-link"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {m[0]}
+      </a>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
 function HourlyStrip({ slots }) {
   return (
     <div className="hourly-strip">
@@ -193,7 +218,7 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
           {row.text}
           {row.tags?.map((t) => <Tag key={t} label={t} />)}
         </span>
-        {row.note && <div className="row-note">{row.note}</div>}
+        {row.note && <div className="row-note"><NoteWithLinks text={row.note} /></div>}
       </div>
       <ThreeDotMenu onEdit={() => startEdit(idx)} onDelete={() => deleteRow(idx)} />
     </div>

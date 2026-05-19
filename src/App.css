@@ -414,6 +414,14 @@ body {
   line-height: 1.4;
 }
 
+.note-link {
+  color: #3B82F6;
+  text-decoration: underline;
+  word-break: break-all;
+}
+.note-link:active { opacity: 0.65; }
+.row-done .note-link { color: #a3c9ac; }
+
 /* ── TAGS ───────────────────────────────────────────────────────────────── */
 .tag {
   display: inline-block;
