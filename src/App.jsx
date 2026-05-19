@@ -166,9 +166,19 @@ function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit
 
 function DayCard({ day, weatherData }) {
   const [open, setOpen] = useState(true);
-  const [rows, setRows] = useState(() =>
-    day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }))
-  );
+  const storageKey = `japan-day-${day.date ?? day.title}`;
+
+  const [rows, setRows] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }));
+  });
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(rows));
+  }, [rows]);
   const [editIdx, setEditIdx] = useState(null);
   const [editVals, setEditVals] = useState({});
   const [isNewRow, setIsNewRow] = useState(false);
