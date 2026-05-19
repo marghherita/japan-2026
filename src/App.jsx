@@ -514,7 +514,7 @@ function Countdown() {
 
   return (
     <div className="countdown">
-      <span className="countdown-label">🇯🇵​ Mancano:</span>
+      <span className="countdown-label">🇯🇵​ Manca:</span>
       <div className="countdown-units">
         {[
           { n: left.days,  u: "giorni" },
