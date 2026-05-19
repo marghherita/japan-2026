@@ -483,10 +483,16 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const toggle = (id) => setActiveSection((cur) => (cur === id ? null : id));
 
   const weatherLabel = weatherUpdatedAt
-    ? `● Live · ${weatherUpdatedAt.getHours().toString().padStart(2, "0")}:${weatherUpdatedAt.getMinutes().toString().padStart(2, "0")}`
+    ? `● Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
   if (itinerary === null || checklist === null) {
