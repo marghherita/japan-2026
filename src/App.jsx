@@ -91,7 +91,7 @@ function HourlyStrip({ slots }) {
 
 // ── sortable row ─────────────────────────────────────────────────────────────
 
-function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit, saveEdit, handleEditKey }) {
+function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit, saveEdit, handleEditKey, deleteRow }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: isEditing,
@@ -153,6 +153,11 @@ function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit
         onClick={(e) => { e.stopPropagation(); startEdit(idx); }}
         title="Modifica"
       >✎</button>
+      <button
+        className="delete-btn"
+        onClick={(e) => { e.stopPropagation(); deleteRow(idx); }}
+        title="Elimina"
+      >×</button>
     </div>
   );
 }
@@ -218,6 +223,8 @@ function DayCard({ day, weatherData }) {
     if (e.key === "Enter") { e.preventDefault(); saveEdit(i); }
     if (e.key === "Escape") cancelEdit();
   };
+  const deleteRow = (i) => setRows((prev) => prev.filter((_, idx) => idx !== i));
+
   const addRow = () => {
     const lastTime = rows[rows.length - 1]?.time ?? "09:00";
     const [h, m] = lastTime.split(":").map(Number);
@@ -270,6 +277,7 @@ function DayCard({ day, weatherData }) {
                   startEdit={startEdit}
                   saveEdit={saveEdit}
                   handleEditKey={handleEditKey}
+                  deleteRow={deleteRow}
                 />
               ))}
             </SortableContext>
