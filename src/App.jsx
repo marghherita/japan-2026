@@ -92,51 +92,14 @@ function HourlyStrip({ slots }) {
 
 // ── sortable row ─────────────────────────────────────────────────────────────
 
-function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit, saveEdit, handleEditKey, deleteRow }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id,
-    disabled: isEditing,
-  });
+function SortableRow({ id, row, idx, startEdit, deleteRow }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.3 : 1,
   };
-
-  if (isEditing) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="row row-editing"
-        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) saveEdit(idx); }}
-      >
-        <input
-          className="edit-time"
-          value={editVals.time}
-          onChange={(e) => setEditVals((v) => ({ ...v, time: e.target.value }))}
-          onKeyDown={(e) => handleEditKey(e, idx)}
-        />
-        <div className="row-content">
-          <input
-            className="edit-text"
-            value={editVals.text}
-            onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
-            onKeyDown={(e) => handleEditKey(e, idx)}
-            autoFocus
-          />
-          <input
-            className="edit-note"
-            placeholder="nota (opzionale)"
-            value={editVals.note}
-            onChange={(e) => setEditVals((v) => ({ ...v, note: e.target.value }))}
-            onKeyDown={(e) => handleEditKey(e, idx)}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div ref={setNodeRef} style={style} className="row">
@@ -216,28 +179,31 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
     });
   };
 
-  // — inline edit —
+  // — modal edit —
   const startEdit = (i) => {
     setEditIdx(i);
-    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "" });
+    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "", tags: rows[i].tags ?? [] });
   };
-  const saveEdit = (i) => {
-    setRows((prev) => prev.map((row, idx) =>
-      idx === i
-        ? { ...row, time: editVals.time.trim() || row.time, text: editVals.text.trim() || row.text, note: editVals.note.trim() || undefined }
+  const saveEdit = () => {
+    if (editIdx === null) return;
+    setRows((prev) => prev.map((row, i) =>
+      i === editIdx
+        ? {
+            ...row,
+            time: editVals.time.trim() || row.time,
+            text: editVals.text.trim() || row.text,
+            note: editVals.note.trim() || undefined,
+            tags: editVals.tags?.length ? editVals.tags : undefined,
+          }
         : row
     ));
     setIsNewRow(false);
     setEditIdx(null);
   };
   const cancelEdit = () => {
-    if (isNewRow) setRows((prev) => prev.filter((_, idx) => idx !== editIdx));
+    if (isNewRow) setRows((prev) => prev.filter((_, i) => i !== editIdx));
     setIsNewRow(false);
     setEditIdx(null);
-  };
-  const handleEditKey = (e, i) => {
-    if (e.key === "Enter") { e.preventDefault(); saveEdit(i); }
-    if (e.key === "Escape") cancelEdit();
   };
   const deleteRow = (i) => setRows((prev) => prev.filter((_, idx) => idx !== i));
 
@@ -249,15 +215,24 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
       const total = h * 60 + m + 30;
       newTime = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
     }
-    const newId = `${day.date ?? day.title}-${Date.now()}`;
-    const newIdx = rows.length;
+    const newId = `${dayKey}-${Date.now()}`;
     setRows((prev) => [...prev, { time: newTime, text: "", _id: newId }]);
-    setEditIdx(newIdx);
-    setEditVals({ time: newTime, text: "", note: "" });
+    setEditIdx(rows.length);
+    setEditVals({ time: newTime, text: "", note: "", tags: [] });
     setIsNewRow(true);
   };
 
   return (
+    <>
+    {editIdx !== null && (
+      <ActivityModal
+        isNew={isNewRow}
+        editVals={editVals}
+        setEditVals={setEditVals}
+        onSave={saveEdit}
+        onCancel={cancelEdit}
+      />
+    )}
     <div className="day-card">
       <button className="day-head" onClick={() => setOpen((o) => !o)}>
         <span className="badge" style={{ background: badge.bg, color: badge.color }}>
@@ -288,83 +263,202 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
                   id={row._id}
                   row={row}
                   idx={i}
-                  isEditing={editIdx === i}
-                  editVals={editVals}
-                  setEditVals={setEditVals}
                   startEdit={startEdit}
-                  saveEdit={saveEdit}
-                  handleEditKey={handleEditKey}
                   deleteRow={deleteRow}
                 />
               ))}
             </SortableContext>
           </DndContext>
-          <button className="add-row-btn" onClick={addRow}>+ aggiungi attività</button>
+          <button className="add-row-btn" onClick={addRow}>
+            <span className="add-row-icon">＋</span> aggiungi attività
+          </button>
         </div>
       )}
+    </div>
+    </>
+  );
+}
+
+// ── activity modal ───────────────────────────────────────────────────────────
+
+function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onCancel(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onCancel]);
+
+  const handleKey = (e) => {
+    if (e.key === "Enter") { e.preventDefault(); onSave(); }
+  };
+
+  const toggleTag = (tag) => {
+    setEditVals((v) => ({
+      ...v,
+      tags: v.tags?.includes(tag) ? v.tags.filter((t) => t !== tag) : [...(v.tags ?? []), tag],
+    }));
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="modal">
+        <div className="modal-header">
+          {isNew ? "Nuova attività" : "Modifica attività"}
+        </div>
+        <div className="modal-body">
+          <div className="modal-field">
+            <label>Attività</label>
+            <input
+              className="modal-input"
+              value={editVals.text}
+              placeholder="es. Visita al Fushimi Inari…"
+              onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
+              onKeyDown={handleKey}
+              autoFocus
+            />
+          </div>
+          <div className="modal-row">
+            <div className="modal-field modal-field-time">
+              <label>Orario</label>
+              <input
+                className="modal-input"
+                type="time"
+                value={editVals.time}
+                onChange={(e) => setEditVals((v) => ({ ...v, time: e.target.value }))}
+                onKeyDown={handleKey}
+              />
+            </div>
+            <div className="modal-field" style={{ flex: 1 }}>
+              <label>Nota <span>(opzionale)</span></label>
+              <input
+                className="modal-input"
+                value={editVals.note}
+                placeholder="prenotazione, link, prezzo…"
+                onChange={(e) => setEditVals((v) => ({ ...v, note: e.target.value }))}
+                onKeyDown={handleKey}
+              />
+            </div>
+          </div>
+          <div className="modal-field">
+            <label>Tag <span>(opzionale)</span></label>
+            <div className="modal-tags">
+              {Object.entries(tagColors).map(([tag, s]) => {
+                const active = editVals.tags?.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`modal-tag${active ? " modal-tag-active" : ""}`}
+                    style={active ? { background: s.bg, color: s.color, borderColor: s.bg } : {}}
+                    onClick={() => toggleTag(tag)}
+                  >{tag}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+          <button className="modal-btn-save" onClick={onSave}>Salva</button>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ── checklist ────────────────────────────────────────────────────────────────
 
+function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onCancel(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onCancel]);
+
+  return (
+    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="modal">
+        <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
+        <div className="modal-body">
+          <div className="modal-field">
+            <label>Voce</label>
+            <input
+              className="modal-input"
+              value={text}
+              placeholder="es. Passaporto, adattatore prese…"
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSave(); } }}
+              autoFocus
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+          <button className="modal-btn-save" onClick={onSave}>Salva</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ChecklistCategory({ category, items, onChange }) {
   const [open, setOpen] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [newText, setNewText] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [modalText, setModalText] = useState("");
 
   const checkedCount = items.filter((i) => i.checked).length;
 
   const toggle = (id) => onChange(items.map((i) => i.id === id ? { ...i, checked: !i.checked } : i));
   const deleteItem = (id) => onChange(items.filter((i) => i.id !== id));
-  const confirmAdd = () => {
-    if (!newText.trim()) return;
-    onChange([...items, { id: `${category.id}-${Date.now()}`, text: newText.trim(), checked: false }]);
-    setNewText("");
-    setAdding(false);
+
+  const openAdd = () => { setEditId("new"); setModalText(""); };
+  const openEdit = (item) => { setEditId(item.id); setModalText(item.text); };
+  const closeModal = () => { setEditId(null); setModalText(""); };
+  const saveModal = () => {
+    if (!modalText.trim()) return;
+    if (editId === "new") {
+      onChange([...items, { id: `${category.id}-${Date.now()}`, text: modalText.trim(), checked: false }]);
+    } else {
+      onChange(items.map((i) => i.id === editId ? { ...i, text: modalText.trim() } : i));
+    }
+    closeModal();
   };
 
   return (
-    <div className="cl-cat">
-      <button className="cl-cat-head" onClick={() => setOpen((o) => !o)}>
-        <span className="cl-cat-icon">{category.icon}</span>
-        <span className="cl-cat-label">{category.label}</span>
-        <span className="cl-cat-count">{checkedCount}/{items.length}</span>
-        <span className="chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
-      </button>
-      {open && (
-        <div className="cl-items">
-          {items.map((item) => (
-            <div key={item.id} className={`cl-item${item.checked ? " cl-item-done" : ""}`}>
-              <input
-                type="checkbox"
-                className="cl-checkbox"
-                checked={item.checked}
-                onChange={() => toggle(item.id)}
-              />
-              <span className="cl-item-text">{item.text}</span>
-              <button className="cl-del-btn" onClick={() => deleteItem(item.id)} title="Elimina">×</button>
-            </div>
-          ))}
-          {adding ? (
-            <div className="cl-add-row">
-              <input
-                autoFocus
-                className="cl-add-input"
-                placeholder="Nuova voce…"
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") confirmAdd(); if (e.key === "Escape") setAdding(false); }}
-              />
-              <button className="cl-add-confirm" onClick={confirmAdd}>✓</button>
-              <button className="cl-add-cancel" onClick={() => setAdding(false)}>×</button>
-            </div>
-          ) : (
-            <button className="add-row-btn" onClick={() => setAdding(true)}>+ aggiungi voce</button>
-          )}
-        </div>
+    <>
+      {editId !== null && (
+        <ChecklistItemModal
+          isNew={editId === "new"}
+          text={modalText}
+          setText={setModalText}
+          onSave={saveModal}
+          onCancel={closeModal}
+        />
       )}
-    </div>
+      <div className="cl-cat">
+        <button className="cl-cat-head" onClick={() => setOpen((o) => !o)}>
+          <span className="cl-cat-icon">{category.icon}</span>
+          <span className="cl-cat-label">{category.label}</span>
+          <span className="cl-cat-count">{checkedCount}/{items.length}</span>
+          <span className="chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+        </button>
+        {open && (
+          <div className="cl-items">
+            {items.map((item) => (
+              <div key={item.id} className={`cl-item${item.checked ? " cl-item-done" : ""}`}>
+                <input type="checkbox" className="cl-checkbox" checked={item.checked} onChange={() => toggle(item.id)} />
+                <span className="cl-item-text">{item.text}</span>
+                <button className="edit-btn" onClick={() => openEdit(item)} title="Modifica">✎</button>
+                <button className="cl-del-btn" onClick={() => deleteItem(item.id)} title="Elimina">×</button>
+              </div>
+            ))}
+            <button className="add-row-btn" onClick={openAdd}>
+              <span className="add-row-icon">＋</span> aggiungi voce
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
