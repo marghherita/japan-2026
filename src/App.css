@@ -289,13 +289,100 @@ body {
 
 .row:hover .drag-handle { opacity: 0.45; }
 
-.row-dragging {
-  opacity: 0.3;
+.edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  padding: 0 2px;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: opacity 0.15s, color 0.15s;
+  line-height: 1;
 }
 
-.row-over {
-  background: var(--border-light);
-  outline: 1.5px dashed var(--border);
+.row:hover .edit-btn { opacity: 0.45; }
+.edit-btn:hover { opacity: 1 !important; color: var(--text-secondary); }
+
+/* EDIT MODE */
+.row-editing {
+  background: #fafaf8;
+  outline: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-left: -8px;
+  margin-right: -8px;
+  margin-bottom: 7px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.edit-time {
+  width: 52px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border: none;
+  border-bottom: 1.5px solid var(--border);
+  background: transparent;
+  outline: none;
+  padding: 1px 0;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.edit-text {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-primary);
+  border: none;
+  border-bottom: 1.5px solid var(--border);
+  background: transparent;
+  outline: none;
+  padding: 1px 0;
+  font-family: inherit;
+}
+
+.edit-note {
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border: none;
+  border-bottom: 1px dashed var(--border);
+  background: transparent;
+  outline: none;
+  padding: 1px 0;
+  margin-top: 5px;
+  font-family: inherit;
+}
+
+.edit-note::placeholder { color: var(--text-tertiary); font-style: italic; }
+
+.edit-time:focus,
+.edit-text:focus,
+.edit-note:focus { border-bottom-color: var(--text-secondary); }
+
+.add-row-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px 0;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.add-row-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--text-tertiary);
 }
 
 .time {

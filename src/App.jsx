@@ -1,10 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
+import {
+  DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { sections, tagColors, badgeStyles } from "./data";
 import { fetchAllWeather } from "./weather";
 import { dayMapPoints } from "./dayMaps";
 import "./App.css";
+
+// ── map helpers ──────────────────────────────────────────────────────────────
 
 const makeMarkerIcon = (n, color) =>
   L.divIcon({
@@ -50,6 +59,8 @@ function DayMap({ points, color }) {
   );
 }
 
+// ── small components ─────────────────────────────────────────────────────────
+
 function Tag({ label }) {
   const style = tagColors[label] || { bg: "#F3F4F6", color: "#374151" };
   return (
@@ -78,11 +89,84 @@ function HourlyStrip({ slots }) {
   );
 }
 
+// ── sortable row ─────────────────────────────────────────────────────────────
+
+function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit, saveEdit, handleEditKey }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: isEditing,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  if (isEditing) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="row row-editing"
+        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) saveEdit(idx); }}
+      >
+        <input
+          className="edit-time"
+          value={editVals.time}
+          onChange={(e) => setEditVals((v) => ({ ...v, time: e.target.value }))}
+          onKeyDown={(e) => handleEditKey(e, idx)}
+        />
+        <div className="row-content">
+          <input
+            className="edit-text"
+            value={editVals.text}
+            onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
+            onKeyDown={(e) => handleEditKey(e, idx)}
+            autoFocus
+          />
+          <input
+            className="edit-note"
+            placeholder="nota (opzionale)"
+            value={editVals.note}
+            onChange={(e) => setEditVals((v) => ({ ...v, note: e.target.value }))}
+            onKeyDown={(e) => handleEditKey(e, idx)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="row">
+      <span className="drag-handle" {...attributes} {...listeners}>⠿</span>
+      <span className="time">{row.time}</span>
+      <div className="row-content">
+        <span className="row-text">
+          {row.text}
+          {row.tags?.map((t) => <Tag key={t} label={t} />)}
+        </span>
+        {row.note && <div className="row-note">{row.note}</div>}
+      </div>
+      <button
+        className="edit-btn"
+        onClick={(e) => { e.stopPropagation(); startEdit(idx); }}
+        title="Modifica"
+      >✎</button>
+    </div>
+  );
+}
+
+// ── day card ─────────────────────────────────────────────────────────────────
+
 function DayCard({ day, weatherData }) {
   const [open, setOpen] = useState(true);
-  const [rows, setRows] = useState(() => day.rows);
-  const [dragFrom, setDragFrom] = useState(null);
-  const [overIdx, setOverIdx] = useState(null);
+  const [rows, setRows] = useState(() =>
+    day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }))
+  );
+  const [editIdx, setEditIdx] = useState(null);
+  const [editVals, setEditVals] = useState({});
+  const [isNewRow, setIsNewRow] = useState(false);
   const badge = badgeStyles[day.badge];
 
   const hourlySlots = weatherData[`${day.date}_${day.city}_hourly`] ?? null;
@@ -94,28 +178,61 @@ function DayCard({ day, weatherData }) {
     return `${w.icon} ${w.temp}°C · ${w.rain}%`;
   }, [day, weatherData]);
 
-  const handleDragStart = (e, i) => {
-    setDragFrom(i);
-    e.dataTransfer.effectAllowed = "move";
+  // — dnd-kit sensors: mouse + touch (hold 200ms to start drag) —
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
+  const handleSortEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    setRows((prev) => {
+      const oldIdx = prev.findIndex((r) => r._id === active.id);
+      const newIdx = prev.findIndex((r) => r._id === over.id);
+      const times = prev.map((r) => r.time);
+      const next = arrayMove(prev, oldIdx, newIdx);
+      return next.map((row, i) => ({ ...row, time: times[i] }));
+    });
   };
 
-  const handleDragOver = (e, i) => {
-    e.preventDefault();
-    if (i !== dragFrom) setOverIdx(i);
+  // — inline edit —
+  const startEdit = (i) => {
+    setEditIdx(i);
+    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "" });
   };
-
-  const handleDrop = (i) => {
-    if (dragFrom === null || dragFrom === i) { setOverIdx(null); return; }
-    const times = rows.map((r) => r.time);
-    const next = [...rows];
-    const [moved] = next.splice(dragFrom, 1);
-    next.splice(i, 0, moved);
-    setRows(next.map((row, idx) => ({ ...row, time: times[idx] })));
-    setDragFrom(null);
-    setOverIdx(null);
+  const saveEdit = (i) => {
+    setRows((prev) => prev.map((row, idx) =>
+      idx === i
+        ? { ...row, time: editVals.time.trim() || row.time, text: editVals.text.trim() || row.text, note: editVals.note.trim() || undefined }
+        : row
+    ));
+    setIsNewRow(false);
+    setEditIdx(null);
   };
-
-  const handleDragEnd = () => { setDragFrom(null); setOverIdx(null); };
+  const cancelEdit = () => {
+    if (isNewRow) setRows((prev) => prev.filter((_, idx) => idx !== editIdx));
+    setIsNewRow(false);
+    setEditIdx(null);
+  };
+  const handleEditKey = (e, i) => {
+    if (e.key === "Enter") { e.preventDefault(); saveEdit(i); }
+    if (e.key === "Escape") cancelEdit();
+  };
+  const addRow = () => {
+    const lastTime = rows[rows.length - 1]?.time ?? "09:00";
+    const [h, m] = lastTime.split(":").map(Number);
+    let newTime = "09:00";
+    if (!isNaN(h) && !isNaN(m)) {
+      const total = h * 60 + m + 30;
+      newTime = `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+    }
+    const newId = `${day.date ?? day.title}-${Date.now()}`;
+    const newIdx = rows.length;
+    setRows((prev) => [...prev, { time: newTime, text: "", _id: newId }]);
+    setEditIdx(newIdx);
+    setEditVals({ time: newTime, text: "", note: "" });
+    setIsNewRow(true);
+  };
 
   return (
     <div className="day-card">
@@ -139,32 +256,32 @@ function DayCard({ day, weatherData }) {
       {open && (
         <div className="day-body">
           {day.alert && <Alert type={day.alert.type} text={day.alert.text} />}
-          {rows.map((row, i) => (
-            <div
-              className={`row${dragFrom === i ? " row-dragging" : ""}${overIdx === i ? " row-over" : ""}`}
-              key={i}
-              draggable
-              onDragStart={(e) => handleDragStart(e, i)}
-              onDragOver={(e) => handleDragOver(e, i)}
-              onDrop={() => handleDrop(i)}
-              onDragEnd={handleDragEnd}
-            >
-              <span className="drag-handle">⠿</span>
-              <span className="time">{row.time}</span>
-              <div className="row-content">
-                <span className="row-text">
-                  {row.text}
-                  {row.tags?.map((t) => <Tag key={t} label={t} />)}
-                </span>
-                {row.note && <div className="row-note">{row.note}</div>}
-              </div>
-            </div>
-          ))}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSortEnd}>
+            <SortableContext items={rows.map((r) => r._id)} strategy={verticalListSortingStrategy}>
+              {rows.map((row, i) => (
+                <SortableRow
+                  key={row._id}
+                  id={row._id}
+                  row={row}
+                  idx={i}
+                  isEditing={editIdx === i}
+                  editVals={editVals}
+                  setEditVals={setEditVals}
+                  startEdit={startEdit}
+                  saveEdit={saveEdit}
+                  handleEditKey={handleEditKey}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+          <button className="add-row-btn" onClick={addRow}>+ aggiungi attività</button>
         </div>
       )}
     </div>
   );
 }
+
+// ── section ───────────────────────────────────────────────────────────────────
 
 function Section({ section, activeSection, onToggle, weatherData }) {
   const isOpen = activeSection === section.id;
@@ -186,6 +303,8 @@ function Section({ section, activeSection, onToggle, weatherData }) {
   );
 }
 
+// ── app ───────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [activeSection, setActiveSection] = useState("osaka");
   const [weatherData, setWeatherData] = useState({});
@@ -194,12 +313,8 @@ export default function App() {
   useEffect(() => {
     const load = () =>
       fetchAllWeather()
-        .then((data) => {
-          setWeatherData(data);
-          setWeatherUpdatedAt(new Date());
-        })
+        .then((data) => { setWeatherData(data); setWeatherUpdatedAt(new Date()); })
         .catch(() => {});
-
     load();
     const timer = setInterval(load, 30 * 60 * 1000);
     return () => clearInterval(timer);
@@ -233,13 +348,7 @@ export default function App() {
 
       <main>
         {sections.map((s) => (
-          <Section
-            key={s.id}
-            section={s}
-            activeSection={activeSection}
-            onToggle={toggle}
-            weatherData={weatherData}
-          />
+          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} />
         ))}
       </main>
 
