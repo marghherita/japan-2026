@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors,
 } from "@dnd-kit/core";
@@ -123,27 +124,44 @@ function HourlyStrip({ slots }) {
 
 function ThreeDotMenu({ onEdit, onDelete }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const btnRef = useRef(null);
+  const dropRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const close = (e) => {
+      if (
+        dropRef.current && !dropRef.current.contains(e.target) &&
+        btnRef.current && !btnRef.current.contains(e.target)
+      ) setOpen(false);
+    };
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
   }, [open]);
 
+  const toggle = (e) => {
+    e.stopPropagation();
+    if (!open) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+    }
+    setOpen((o) => !o);
+  };
+
   return (
-    <div className="row-menu" ref={ref}>
-      <button
-        className="row-menu-btn"
-        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        title="Opzioni"
-      >⋮</button>
-      {open && (
-        <div className="row-menu-dropdown">
+    <div className="row-menu">
+      <button ref={btnRef} className="row-menu-btn" onClick={toggle} title="Opzioni">⋮</button>
+      {open && createPortal(
+        <div
+          ref={dropRef}
+          className="row-menu-dropdown"
+          style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}
+        >
           <button onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}>✎ Modifica</button>
           <button className="row-menu-delete" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}>× Elimina</button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -190,13 +208,13 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
   const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
 
   const [rows, setRows] = useState(() => {
-    if (initialRows?.length) {
-      return initialRows.map((row) => {
-        const def = defaultRows.find((d) => d._id === row._id);
-        return { ...row, coords: row.coords ?? def?.coords };
-      });
-    }
-    return defaultRows;
+    const base = initialRows?.length
+      ? initialRows.map((row) => {
+          const def = defaultRows.find((d) => d._id === row._id);
+          return { ...row, coords: row.coords ?? def?.coords };
+        })
+      : defaultRows;
+    return [...base].sort((a, b) => (a.time ?? "").localeCompare(b.time ?? ""));
   });
 
   const isFirstRowEffect = useRef(true);
@@ -213,16 +231,6 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
     ? (alertOverride?.text ? alertOverride : null)
     : (day.alert || null);
 
-  const hourlySlots = weatherData[`${day.date}_${day.city}_hourly`] ?? null;
-
-  const weather = useMemo(() => {
-    if (!day.date || !day.city) return day.weather;
-    const w = weatherData[`${day.date}_${day.city}`];
-    if (!w) return day.weather;
-    return `${w.icon} ${w.temp}°C · ${w.rain}%`;
-  }, [day, weatherData]);
-
-  // — dnd-kit sensors: mouse + touch (hold 200ms to start drag) —
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
@@ -238,6 +246,15 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
       return next.map((row, i) => ({ ...row, time: times[i] }));
     });
   };
+
+  const hourlySlots = weatherData[`${day.date}_${day.city}_hourly`] ?? null;
+
+  const weather = useMemo(() => {
+    if (!day.date || !day.city) return day.weather;
+    const w = weatherData[`${day.date}_${day.city}`];
+    if (!w) return day.weather;
+    return `${w.icon} ${w.temp}°C · ${w.rain}%`;
+  }, [day, weatherData]);
 
   // — modal edit —
   const startEdit = (i) => {
