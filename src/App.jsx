@@ -279,7 +279,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
       };
       if (moved.text) onMoveRow?.(moved, targetDay);
     } else {
-      setRows((prev) => prev.map((row, i) =>
+      setRows((prev) => [...prev.map((row, i) =>
         i === editIdx
           ? {
               ...row,
@@ -289,7 +289,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
               tags: editVals.tags?.length ? editVals.tags : undefined,
             }
           : row
-      ));
+      )].sort((a, b) => (a.time ?? "").localeCompare(b.time ?? "")));
     }
     setIsNewRow(false);
     setEditIdx(null);
