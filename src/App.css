@@ -677,6 +677,16 @@ body {
 .day-map .leaflet-popup-content { margin: 6px 10px; line-height: 1.4; }
 
 .weather-live { color: #22C55E; font-weight: 500; }
+.weather-live::before {
+  content: "●";
+  margin-right: 5px;
+  animation: live-pulse 2s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
 .weather-loading { color: var(--text-tertiary); opacity: 0.7; }
 
 /* ── COUNTDOWN ──────────────────────────────────────────────────────────── */

@@ -888,7 +888,7 @@ export default function App() {
   const toggle = (id) => setActiveSection((cur) => (cur === id ? null : id));
 
   const weatherLabel = weatherUpdatedAt
-    ? `● Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
+    ? `Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
   if (itinerary === null || checklist === null || alerts === null) {
