@@ -1,0 +1,87 @@
+// Ordered waypoints for each day — shown as numbered markers + polyline
+export const dayMapPoints = {
+  "2026-05-24": [
+    { label: "Dotonbori", coords: [34.6687, 135.5013] },
+  ],
+  "2026-05-25": [
+    { label: "Katsuoji", coords: [34.8557, 135.4753] },
+    { label: "Sannomiya · Kobe beef", coords: [34.6913, 135.1955] },
+    { label: "Kitano · ville europee", coords: [34.6972, 135.1893] },
+    { label: "Meriken Park", coords: [34.6842, 135.1884] },
+    { label: "Nankinmachi · Chinatown", coords: [34.6887, 135.1899] },
+  ],
+  "2026-05-26": [
+    { label: "Kaiyukan", coords: [34.6547, 135.4282] },
+    { label: "Den Den Town", coords: [34.6626, 135.5066] },
+    { label: "Shinsaibashi", coords: [34.6721, 135.5012] },
+    { label: "Dotonbori", coords: [34.6687, 135.5013] },
+  ],
+  "2026-05-27": [
+    { label: "Nishiki Market", coords: [35.0046, 135.7642] },
+    { label: "Gion", coords: [35.0037, 135.7786] },
+    { label: "Kennin-ji", coords: [35.0003, 135.7773] },
+    { label: "Pontocho", coords: [35.0074, 135.7717] },
+  ],
+  "2026-05-28": [
+    { label: "Arashiyama · Foresta di bambù", coords: [35.0168, 135.6717] },
+    { label: "Tenryu-ji", coords: [35.0168, 135.6714] },
+    { label: "Togetsukyo Bridge", coords: [35.0125, 135.6788] },
+    { label: "Kinkaku-ji", coords: [35.0394, 135.7292] },
+    { label: "Ryoan-ji", coords: [35.0344, 135.7184] },
+    { label: "Kawaramachi", coords: [35.0048, 135.7701] },
+  ],
+  "2026-05-29": [
+    { label: "Byodo-in · Uji", coords: [34.8884, 135.8070] },
+    { label: "Uji-gami Jinja", coords: [34.8912, 135.8101] },
+    { label: "Nara Park", coords: [34.6851, 135.8328] },
+    { label: "Todai-ji", coords: [34.6887, 135.8398] },
+    { label: "Kasuga Taisha", coords: [34.6815, 135.8479] },
+    { label: "Gion di sera", coords: [35.0037, 135.7786] },
+  ],
+  "2026-05-30": [
+    { label: "Fushimi Inari", coords: [34.9671, 135.7727] },
+    { label: "Sannenzaka · Ninenzaka", coords: [34.9979, 135.7784] },
+    { label: "Kiyomizu-dera", coords: [34.9948, 135.7851] },
+    { label: "Filosofo's Path", coords: [35.0152, 135.7838] },
+    { label: "Heian Jingu", coords: [35.0166, 135.7822] },
+    { label: "Kawaramachi", coords: [35.0048, 135.7701] },
+  ],
+  "2026-05-31": [
+    { label: "Akihabara", coords: [35.7022, 139.7741] },
+  ],
+  "2026-06-01": [
+    { label: "Senso-ji", coords: [35.7148, 139.7967] },
+    { label: "Yanaka", coords: [35.7219, 139.7668] },
+    { label: "Ueno · National Museum", coords: [35.7189, 139.7762] },
+    { label: "Ginza", coords: [35.6716, 139.7646] },
+    { label: "Tsukiji esterno", coords: [35.6654, 139.7707] },
+  ],
+  "2026-06-02": [
+    { label: "Meiji Jingu", coords: [35.6763, 139.6993] },
+    { label: "Parco Yoyogi", coords: [35.6714, 139.6944] },
+    { label: "Harajuku", coords: [35.6702, 139.7027] },
+    { label: "Omotesando", coords: [35.6652, 139.7103] },
+    { label: "Shibuya Crossing", coords: [35.6595, 139.7005] },
+    { label: "Daikanyama", coords: [35.6484, 139.7040] },
+    { label: "Nakameguro", coords: [35.6423, 139.6994] },
+  ],
+  "2026-06-03": [
+    { label: "Shimokitazawa", coords: [35.6614, 139.6680] },
+    { label: "Shinjuku · Omoide Yokocho", coords: [35.6938, 139.7034] },
+    { label: "Shiba Park · Tokyo Tower", coords: [35.6586, 139.7454] },
+    { label: "Azabudai Hills", coords: [35.6623, 139.7395] },
+    { label: "Roppongi · Mori Art Museum", coords: [35.6628, 139.7315] },
+    { label: "Azabu-Juban", coords: [35.6555, 139.7355] },
+  ],
+  "2026-06-04": [
+    { label: "Tsukiji mercato", coords: [35.6654, 139.7707] },
+    { label: "Kagurazaka · Canal Café", coords: [35.7016, 139.7434] },
+    { label: "Jimbocho", coords: [35.6967, 139.7578] },
+    { label: "Nakano Broadway", coords: [35.7087, 139.6654] },
+  ],
+  "2026-06-05": [
+    { label: "Senso-ji", coords: [35.7148, 139.7967] },
+    { label: "Hamarikyu", coords: [35.6605, 139.7634] },
+    { label: "Haneda Airport", coords: [35.5494, 139.7798] },
+  ],
+};

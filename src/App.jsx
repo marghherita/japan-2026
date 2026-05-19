@@ -1,7 +1,54 @@
 import { useState, useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
 import { sections, tagColors, badgeStyles } from "./data";
 import { fetchAllWeather } from "./weather";
+import { dayMapPoints } from "./dayMaps";
 import "./App.css";
+
+const makeMarkerIcon = (n, color) =>
+  L.divIcon({
+    className: "",
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-family:sans-serif">${n}</div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -13],
+  });
+
+function MapFitter({ positions }) {
+  const map = useMap();
+  useEffect(() => {
+    if (positions.length > 1) map.fitBounds(positions, { padding: [28, 28] });
+    else map.setView(positions[0], 15);
+  }, [map]);
+  return null;
+}
+
+function DayMap({ points, color }) {
+  const positions = points.map((p) => p.coords);
+  return (
+    <div className="day-map">
+      <MapContainer
+        center={positions[0]}
+        zoom={13}
+        zoomControl={false}
+        attributionControl={false}
+        style={{ height: "210px", width: "100%" }}
+      >
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+        <MapFitter positions={positions} />
+        {positions.length > 1 && (
+          <Polyline positions={positions} color={color} weight={2.5} opacity={0.75} />
+        )}
+        {points.map((p, i) => (
+          <Marker key={i} position={p.coords} icon={makeMarkerIcon(i + 1, color)}>
+            <Popup>{p.label}</Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
 
 function Tag({ label }) {
   const style = tagColors[label] || { bg: "#F3F4F6", color: "#374151" };
@@ -84,6 +131,10 @@ function DayCard({ day, weatherData }) {
       </button>
 
       {open && hourlySlots && <HourlyStrip slots={hourlySlots} />}
+
+      {open && dayMapPoints[day.date] && (
+        <DayMap points={dayMapPoints[day.date]} color={badgeStyles[day.badge].color} />
+      )}
 
       {open && (
         <div className="day-body">
