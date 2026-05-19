@@ -14,7 +14,17 @@ import { fetchAllWeather } from "./weather";
 import "./App.css";
 import { loadItinerary, saveItinerary, loadChecklist, saveChecklist } from "./firebase";
 
-// ── map helpers ──────────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+const MONTHS = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+function formatDayOption(day) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day.key)) return day.label;
+  const d = new Date(day.key + 'T12:00:00');
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} · ${day.label}`;
+}
+
+// ── map helpers ───────────────────────────────────────────────────────────────
 
 const makeMarkerIcon = (n, color) =>
   L.divIcon({
@@ -134,7 +144,7 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
 
 // ── day card ─────────────────────────────────────────────────────────────────
 
-function DayCard({ day, weatherData, initialRows, onRowsChange }) {
+function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveRow }) {
   const [open, setOpen] = useState(true);
   const dayKey = day.date ?? day.title;
   const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
@@ -188,21 +198,38 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
   // — modal edit —
   const startEdit = (i) => {
     setEditIdx(i);
-    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "", tags: rows[i].tags ?? [] });
+    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "", tags: rows[i].tags ?? [], targetDay: dayKey });
   };
   const saveEdit = () => {
     if (editIdx === null) return;
-    setRows((prev) => prev.map((row, i) =>
-      i === editIdx
-        ? {
-            ...row,
-            time: editVals.time.trim() || row.time,
-            text: editVals.text.trim() || row.text,
-            note: editVals.note.trim() || undefined,
-            tags: editVals.tags?.length ? editVals.tags : undefined,
-          }
-        : row
-    ));
+    const targetDay = editVals.targetDay ?? dayKey;
+    const isMove = targetDay !== dayKey;
+
+    if (isMove) {
+      setRows((prev) => prev.filter((_, i) => i !== editIdx));
+      const src = isNewRow ? {} : rows[editIdx];
+      const moved = {
+        ...src,
+        _id: `${targetDay}-${Date.now()}`,
+        time: editVals.time.trim() || src.time || "09:00",
+        text: editVals.text.trim() || src.text || "",
+        note: editVals.note.trim() || undefined,
+        tags: editVals.tags?.length ? editVals.tags : undefined,
+      };
+      if (moved.text) onMoveRow?.(moved, targetDay);
+    } else {
+      setRows((prev) => prev.map((row, i) =>
+        i === editIdx
+          ? {
+              ...row,
+              time: editVals.time.trim() || row.time,
+              text: editVals.text.trim() || row.text,
+              note: editVals.note.trim() || undefined,
+              tags: editVals.tags?.length ? editVals.tags : undefined,
+            }
+          : row
+      ));
+    }
     setIsNewRow(false);
     setEditIdx(null);
   };
@@ -225,7 +252,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
     const newId = `${dayKey}-${Date.now()}`;
     setRows((prev) => [...prev, { time: newTime, text: "", _id: newId }]);
     setEditIdx(rows.length);
-    setEditVals({ time: newTime, text: "", note: "", tags: [] });
+    setEditVals({ time: newTime, text: "", note: "", tags: [], targetDay: dayKey });
     setIsNewRow(true);
   };
 
@@ -238,6 +265,8 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
         setEditVals={setEditVals}
         onSave={saveEdit}
         onCancel={cancelEdit}
+        allDays={allDays}
+        currentDayKey={dayKey}
       />
     )}
     <div className="day-card">
@@ -300,12 +329,18 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
 
 // ── activity modal ───────────────────────────────────────────────────────────
 
-function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel }) {
+function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays, currentDayKey }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onCancel(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onCancel]);
+
+  useEffect(() => {
+    const y = window.scrollY;
+    document.body.style.cssText = `position:fixed;top:-${y}px;left:0;right:0;overflow-y:scroll`;
+    return () => { document.body.style.cssText = ""; window.scrollTo(0, y); };
+  }, []);
 
   const handleKey = (e) => {
     if (e.key === "Enter") { e.preventDefault(); onSave(); }
@@ -375,6 +410,20 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel }) {
               })}
             </div>
           </div>
+          {allDays && allDays.length > 1 && (
+            <div className="modal-field">
+              <label>Giorno <span>(sposta attività)</span></label>
+              <select
+                className="modal-select"
+                value={editVals.targetDay ?? currentDayKey}
+                onChange={(e) => setEditVals((v) => ({ ...v, targetDay: e.target.value }))}
+              >
+                {allDays.map((d) => (
+                  <option key={d.key} value={d.key}>{formatDayOption(d)}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <div className="modal-footer">
           <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
@@ -393,6 +442,12 @@ function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onCancel]);
+
+  useEffect(() => {
+    const y = window.scrollY;
+    document.body.style.cssText = `position:fixed;top:-${y}px;left:0;right:0;overflow-y:scroll`;
+    return () => { document.body.style.cssText = ""; window.scrollTo(0, y); };
+  }, []);
 
   return (
     <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
@@ -520,7 +575,7 @@ function Checklist({ state, onChange }) {
 
 // ── section ───────────────────────────────────────────────────────────────────
 
-function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange }) {
+function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange, allDays, onMoveRow, cardVersions }) {
   const isOpen = activeSection === section.id;
   return (
     <div className="section">
@@ -531,12 +586,17 @@ function Section({ section, activeSection, onToggle, weatherData, itinerary, onR
       </button>
       {isOpen && (
         <div className="section-days">
-          {section.days.map((day, i) => {
+          {section.days.map((day) => {
             const dk = day.date ?? day.title;
             return (
-              <DayCard key={i} day={day} weatherData={weatherData}
+              <DayCard
+                key={`${dk}-${cardVersions?.[dk] ?? 0}`}
+                day={day}
+                weatherData={weatherData}
                 initialRows={itinerary?.[dk]}
                 onRowsChange={onRowsChange}
+                allDays={allDays}
+                onMoveRow={onMoveRow}
               />
             );
           })}
@@ -556,6 +616,11 @@ export default function App() {
   const hasLoaded = useRef(false);
   const [checklist, setChecklist] = useState(null);
   const hasChecklistLoaded = useRef(false);
+  const [cardVersions, setCardVersions] = useState({});
+
+  const allDays = useMemo(() =>
+    sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
+  []);
 
   useEffect(() => {
     loadItinerary()
@@ -584,6 +649,14 @@ export default function App() {
 
   const handleChecklistChange = useCallback((catId, items) => {
     setChecklist((prev) => ({ ...prev, [catId]: items }));
+  }, []);
+
+  const handleMoveRow = useCallback((row, toKey) => {
+    setItinerary((prev) => ({
+      ...prev,
+      [toKey]: [...(prev?.[toKey] ?? []), row],
+    }));
+    setCardVersions((prev) => ({ ...prev, [toKey]: (prev[toKey] ?? 0) + 1 }));
   }, []);
 
   useEffect(() => {
@@ -635,7 +708,7 @@ export default function App() {
       <main>
         <Checklist state={checklist} onChange={handleChecklistChange} />
 {sections.map((s) => (
-          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} />
+          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} allDays={allDays} onMoveRow={handleMoveRow} cardVersions={cardVersions} />
         ))}
       </main>
 
