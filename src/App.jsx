@@ -119,6 +119,36 @@ function HourlyStrip({ slots }) {
   );
 }
 
+// ── 3-dot menu ───────────────────────────────────────────────────────────────
+
+function ThreeDotMenu({ onEdit, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [open]);
+
+  return (
+    <div className="row-menu" ref={ref}>
+      <button
+        className="row-menu-btn"
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        title="Opzioni"
+      >⋮</button>
+      {open && (
+        <div className="row-menu-dropdown">
+          <button onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}>✎ Modifica</button>
+          <button className="row-menu-delete" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}>× Elimina</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── sortable row ─────────────────────────────────────────────────────────────
 
 function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
@@ -147,16 +177,7 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
         </span>
         {row.note && <div className="row-note">{row.note}</div>}
       </div>
-      <button
-        className="edit-btn"
-        onClick={(e) => { e.stopPropagation(); startEdit(idx); }}
-        title="Modifica"
-      >✎</button>
-      <button
-        className="delete-btn"
-        onClick={(e) => { e.stopPropagation(); deleteRow(idx); }}
-        title="Elimina"
-      >×</button>
+      <ThreeDotMenu onEdit={() => startEdit(idx)} onDelete={() => deleteRow(idx)} />
     </div>
   );
 }
@@ -695,8 +716,7 @@ function ChecklistCategory({ category, items, onChange }) {
               <div key={item.id} className={`cl-item${item.checked ? " cl-item-done" : ""}`}>
                 <input type="checkbox" className="cl-checkbox" checked={item.checked} onChange={() => toggle(item.id)} />
                 <span className="cl-item-text">{item.text}</span>
-                <button className="edit-btn" onClick={() => openEdit(item)} title="Modifica">✎</button>
-                <button className="cl-del-btn" onClick={() => deleteItem(item.id)} title="Elimina">×</button>
+                <ThreeDotMenu onEdit={() => openEdit(item)} onDelete={() => deleteItem(item.id)} />
               </div>
             ))}
             <button className="add-row-btn" onClick={openAdd}>
