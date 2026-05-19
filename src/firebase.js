@@ -13,8 +13,14 @@ const app = initializeApp({
 
 const db = getDatabase(app);
 
-export const loadItinerary  = () =>
+export const loadItinerary = () =>
   get(ref(db, "itinerary")).then((snap) => snap.val() ?? {});
 
-export const saveItinerary  = (data) =>
+export const saveItinerary = (data) =>
   set(ref(db, "itinerary"), JSON.parse(JSON.stringify(data)));
+
+export const loadChecklist = () =>
+  get(ref(db, "checklist")).then((snap) => snap.val() ?? {});
+
+export const saveChecklist = (data) =>
+  set(ref(db, "checklist"), JSON.parse(JSON.stringify(data)));

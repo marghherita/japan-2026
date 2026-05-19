@@ -9,9 +9,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { sections, tagColors, badgeStyles } from "./data";
+import { checklistCategories } from "./checklistData";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
-import { loadItinerary, saveItinerary } from "./firebase";
+import { loadItinerary, saveItinerary, loadChecklist, saveChecklist } from "./firebase";
 
 // ── map helpers ──────────────────────────────────────────────────────────────
 
@@ -305,6 +306,105 @@ function DayCard({ day, weatherData, initialRows, onRowsChange }) {
   );
 }
 
+// ── checklist ────────────────────────────────────────────────────────────────
+
+function ChecklistCategory({ category, items, onChange }) {
+  const [open, setOpen] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [newText, setNewText] = useState("");
+
+  const checkedCount = items.filter((i) => i.checked).length;
+
+  const toggle = (id) => onChange(items.map((i) => i.id === id ? { ...i, checked: !i.checked } : i));
+  const deleteItem = (id) => onChange(items.filter((i) => i.id !== id));
+  const confirmAdd = () => {
+    if (!newText.trim()) return;
+    onChange([...items, { id: `${category.id}-${Date.now()}`, text: newText.trim(), checked: false }]);
+    setNewText("");
+    setAdding(false);
+  };
+
+  return (
+    <div className="cl-cat">
+      <button className="cl-cat-head" onClick={() => setOpen((o) => !o)}>
+        <span className="cl-cat-icon">{category.icon}</span>
+        <span className="cl-cat-label">{category.label}</span>
+        <span className="cl-cat-count">{checkedCount}/{items.length}</span>
+        <span className="chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+      </button>
+      {open && (
+        <div className="cl-items">
+          {items.map((item) => (
+            <div key={item.id} className={`cl-item${item.checked ? " cl-item-done" : ""}`}>
+              <input
+                type="checkbox"
+                className="cl-checkbox"
+                checked={item.checked}
+                onChange={() => toggle(item.id)}
+              />
+              <span className="cl-item-text">{item.text}</span>
+              <button className="cl-del-btn" onClick={() => deleteItem(item.id)} title="Elimina">×</button>
+            </div>
+          ))}
+          {adding ? (
+            <div className="cl-add-row">
+              <input
+                autoFocus
+                className="cl-add-input"
+                placeholder="Nuova voce…"
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") confirmAdd(); if (e.key === "Escape") setAdding(false); }}
+              />
+              <button className="cl-add-confirm" onClick={confirmAdd}>✓</button>
+              <button className="cl-add-cancel" onClick={() => setAdding(false)}>×</button>
+            </div>
+          ) : (
+            <button className="add-row-btn" onClick={() => setAdding(true)}>+ aggiungi voce</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Checklist({ state, onChange }) {
+  const [open, setOpen] = useState(false);
+
+  const allItems = checklistCategories.flatMap((cat) => state[cat.id] ?? cat.defaultItems);
+  const total = allItems.length;
+  const checked = allItems.filter((i) => i.checked).length;
+  const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+  return (
+    <div className="cl-wrap">
+      <button className="cl-head" onClick={() => setOpen((o) => !o)}>
+        <span className="cl-head-left">
+          <span className="cl-head-title">✈ Checklist viaggio</span>
+          <span className="cl-head-counter">{checked}/{total} voci</span>
+        </span>
+        <span className="cl-progress-wrap">
+          <span className="cl-progress-bar" style={{ width: `${pct}%` }} />
+        </span>
+        <span className="cl-pct">{pct}%</span>
+        <span className="section-chevron" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+      </button>
+      {open && (
+        <div className="cl-body">
+          {checklistCategories.map((cat) => (
+            <ChecklistCategory
+              key={cat.id}
+              category={cat}
+              items={state[cat.id] ?? cat.defaultItems}
+              onChange={(items) => onChange(cat.id, items)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── section ───────────────────────────────────────────────────────────────────
 
 function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange }) {
@@ -341,11 +441,16 @@ export default function App() {
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const hasLoaded = useRef(false);
+  const [checklist, setChecklist] = useState(null);
+  const hasChecklistLoaded = useRef(false);
 
   useEffect(() => {
     loadItinerary()
       .then((data) => setItinerary(data ?? {}))
       .catch(() => setItinerary({}));
+    loadChecklist()
+      .then((data) => setChecklist(data ?? {}))
+      .catch(() => setChecklist({}));
   }, []);
 
   useEffect(() => {
@@ -354,8 +459,18 @@ export default function App() {
     saveItinerary(itinerary).catch(console.error);
   }, [itinerary]);
 
+  useEffect(() => {
+    if (checklist === null) return;
+    if (!hasChecklistLoaded.current) { hasChecklistLoaded.current = true; return; }
+    saveChecklist(checklist).catch(console.error);
+  }, [checklist]);
+
   const handleRowsChange = useCallback((key, rows) => {
     setItinerary((prev) => ({ ...prev, [key]: rows }));
+  }, []);
+
+  const handleChecklistChange = useCallback((catId, items) => {
+    setChecklist((prev) => ({ ...prev, [catId]: items }));
   }, []);
 
   useEffect(() => {
@@ -374,7 +489,7 @@ export default function App() {
     ? `● Live · ${weatherUpdatedAt.getHours().toString().padStart(2, "0")}:${weatherUpdatedAt.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
-  if (itinerary === null) {
+  if (itinerary === null || checklist === null) {
     return <div className="page"><p style={{ padding: "2rem", textAlign: "center" }}>Caricamento…</p></div>;
   }
 
@@ -399,6 +514,7 @@ export default function App() {
       </header>
 
       <main>
+        <Checklist state={checklist} onChange={handleChecklistChange} />
         {sections.map((s) => (
           <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} />
         ))}
