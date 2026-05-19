@@ -12,7 +12,7 @@ import { sections, tagColors, badgeStyles } from "./data";
 import { checklistCategories } from "./checklistData";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
-import { loadItinerary, saveItinerary, loadChecklist, saveChecklist } from "./firebase";
+import { loadItinerary, saveItinerary, loadChecklist, saveChecklist, loadAlerts, saveAlerts } from "./firebase";
 import * as Dialog from "@radix-ui/react-dialog";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
 
 // ── day card ─────────────────────────────────────────────────────────────────
 
-function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveRow }) {
+function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveRow, alertOverride, onAlertChange }) {
   const [open, setOpen] = useState(true);
   const dayKey = day.date ?? day.title;
   const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
@@ -187,6 +187,10 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
   const [editVals, setEditVals] = useState({});
   const [isNewRow, setIsNewRow] = useState(false);
   const badge = badgeStyles[day.badge];
+  const [alertEditOpen, setAlertEditOpen] = useState(false);
+  const effectiveAlert = alertOverride !== undefined
+    ? (alertOverride?.text ? alertOverride : null)
+    : (day.alert || null);
 
   const hourlySlots = weatherData[`${day.date}_${day.city}_hourly`] ?? null;
 
@@ -288,6 +292,14 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
         currentDayKey={dayKey}
       />
     )}
+    {alertEditOpen && (
+      <AlertEditModal
+        current={effectiveAlert}
+        onSave={(val) => { onAlertChange?.(dayKey, val); setAlertEditOpen(false); }}
+        onCancel={() => setAlertEditOpen(false)}
+        onRemove={() => { onAlertChange?.(dayKey, { type: "", text: "" }); setAlertEditOpen(false); }}
+      />
+    )}
     <div className="day-card">
       <button className="day-head" onClick={() => setOpen((o) => !o)}>
         <span className="badge" style={{ background: badge.bg, color: badge.color }}>
@@ -320,7 +332,14 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
 
       {open && (
         <div className="day-body">
-          {day.alert && <Alert type={day.alert.type} text={day.alert.text} />}
+          {effectiveAlert ? (
+            <div className="alert-wrap">
+              <Alert type={effectiveAlert.type} text={effectiveAlert.text} />
+              <button className="alert-edit-btn" onClick={() => setAlertEditOpen(true)} title="Modifica nota">✎</button>
+            </div>
+          ) : (
+            <button className="add-alert-btn" onClick={() => setAlertEditOpen(true)}>＋ aggiungi nota</button>
+          )}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSortEnd}>
             <SortableContext items={rows.map((r) => r._id)} strategy={verticalListSortingStrategy}>
               {rows.map((row, i) => (
@@ -489,6 +508,67 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
   );
 }
 
+// ── alert edit modal ─────────────────────────────────────────────────────────
+
+function AlertEditModal({ current, onSave, onCancel, onRemove }) {
+  const { modalRef, dragProps } = useSwipeDismiss(onCancel);
+  const [type, setType] = useState(current?.type || "warn");
+  const [text, setText] = useState(current?.text || "");
+
+  const typeOptions = [
+    { value: "warn", label: "⚠️ Attenzione" },
+    { value: "info", label: "ℹ️ Info" },
+    { value: "ok",   label: "✅ Ok" },
+  ];
+
+  return (
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="modal-backdrop" />
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="modal-drag-zone" {...dragProps}>
+            <div className="modal-pill" />
+            <div className="modal-header">{current ? "Modifica nota" : "Aggiungi nota"}</div>
+          </div>
+          <div className="modal-body">
+            <div className="modal-field">
+              <label>Tipo</label>
+              <div className="alert-type-btns">
+                {typeOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`alert-type-btn alert-type-btn-${opt.value}${type === opt.value ? " active" : ""}`}
+                    onClick={() => setType(opt.value)}
+                  >{opt.label}</button>
+                ))}
+              </div>
+            </div>
+            <div className="modal-field">
+              <label>Testo</label>
+              <input
+                className="modal-input"
+                value={text}
+                placeholder="es. Prenotazione richiesta, portare ombrello…"
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (text.trim()) onSave({ type, text: text.trim() }); } }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="modal-footer">
+            {current && (
+              <button className="modal-btn-remove" onClick={onRemove}>Rimuovi</button>
+            )}
+            <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+            <button className="modal-btn-save" onClick={() => { if (text.trim()) onSave({ type, text: text.trim() }); }}>Salva</button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
 // ── countdown ────────────────────────────────────────────────────────────────
 
 const DEPART = new Date("2026-05-24T00:00:00");
@@ -514,7 +594,7 @@ function Countdown() {
 
   return (
     <div className="countdown">
-      <span className="countdown-label">🇯🇵​ Manca:</span>
+      <span className="countdown-label">🇯🇵​ Mancano:</span>
       <div className="countdown-units">
         {[
           { n: left.days,  u: "giorni" },
@@ -668,7 +748,7 @@ function Checklist({ state, onChange }) {
 
 // ── section ───────────────────────────────────────────────────────────────────
 
-function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange, allDays, onMoveRow, cardVersions }) {
+function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange, allDays, onMoveRow, cardVersions, alerts, onAlertChange }) {
   const isOpen = activeSection === section.id;
   return (
     <div className="section">
@@ -690,6 +770,8 @@ function Section({ section, activeSection, onToggle, weatherData, itinerary, onR
                 onRowsChange={onRowsChange}
                 allDays={allDays}
                 onMoveRow={onMoveRow}
+                alertOverride={alerts?.[dk]}
+                onAlertChange={onAlertChange}
               />
             );
           })}
@@ -710,6 +792,8 @@ export default function App() {
   const [checklist, setChecklist] = useState(null);
   const hasChecklistLoaded = useRef(false);
   const [cardVersions, setCardVersions] = useState({});
+  const [alerts, setAlerts] = useState(null);
+  const hasAlertsLoaded = useRef(false);
 
   const allDays = useMemo(() =>
     sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
@@ -722,6 +806,9 @@ export default function App() {
     loadChecklist()
       .then((data) => setChecklist(data ?? {}))
       .catch(() => setChecklist({}));
+    loadAlerts()
+      .then((data) => setAlerts(data ?? {}))
+      .catch(() => setAlerts({}));
   }, []);
 
   useEffect(() => {
@@ -735,6 +822,12 @@ export default function App() {
     if (!hasChecklistLoaded.current) { hasChecklistLoaded.current = true; return; }
     saveChecklist(checklist).catch(console.error);
   }, [checklist]);
+
+  useEffect(() => {
+    if (alerts === null) return;
+    if (!hasAlertsLoaded.current) { hasAlertsLoaded.current = true; return; }
+    saveAlerts(alerts).catch(console.error);
+  }, [alerts]);
 
   const handleRowsChange = useCallback((key, rows) => {
     setItinerary((prev) => ({ ...prev, [key]: rows }));
@@ -750,6 +843,10 @@ export default function App() {
       [toKey]: [...(prev?.[toKey] ?? []), row],
     }));
     setCardVersions((prev) => ({ ...prev, [toKey]: (prev[toKey] ?? 0) + 1 }));
+  }, []);
+
+  const handleAlertChange = useCallback((dayKey, val) => {
+    setAlerts((prev) => ({ ...prev, [dayKey]: val }));
   }, []);
 
   useEffect(() => {
@@ -774,7 +871,7 @@ export default function App() {
     ? `● Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
-  if (itinerary === null || checklist === null) {
+  if (itinerary === null || checklist === null || alerts === null) {
     return <div className="page"><p style={{ padding: "2rem", textAlign: "center" }}>Caricamento…</p></div>;
   }
 
@@ -802,7 +899,7 @@ export default function App() {
         <Countdown />
         <Checklist state={checklist} onChange={handleChecklistChange} />
 {sections.map((s) => (
-          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} allDays={allDays} onMoveRow={handleMoveRow} cardVersions={cardVersions} />
+          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} allDays={allDays} onMoveRow={handleMoveRow} cardVersions={cardVersions} alerts={alerts} onAlertChange={handleAlertChange} />
         ))}
       </main>
 

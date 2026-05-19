@@ -24,3 +24,9 @@ export const loadChecklist = () =>
 
 export const saveChecklist = (data) =>
   set(ref(db, "checklist"), JSON.parse(JSON.stringify(data)));
+
+export const loadAlerts = () =>
+  get(ref(db, "alerts")).then((snap) => snap.val() ?? {});
+
+export const saveAlerts = (data) =>
+  set(ref(db, "alerts"), JSON.parse(JSON.stringify(data)));
