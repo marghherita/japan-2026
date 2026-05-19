@@ -422,6 +422,21 @@ body {
 .note-link:active { opacity: 0.65; }
 .row-done .note-link { color: #a3c9ac; }
 
+.row-title-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(0,0,0,0.3);
+}
+.row-title-link::after {
+  content: " ↗";
+  font-size: 10px;
+  opacity: 0.5;
+  vertical-align: super;
+}
+.row-title-link:active { opacity: 0.65; }
+.row-done .row-title-link { text-decoration-color: rgba(0,0,0,0.15); }
+
 /* ── TAGS ───────────────────────────────────────────────────────────────── */
 .tag {
   display: inline-block;

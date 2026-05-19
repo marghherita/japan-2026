@@ -215,7 +215,9 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
       <span className="time">{row.time}</span>
       <div className="row-content">
         <span className="row-text">
-          {row.text}
+          {row.url ? (
+            <a href={row.url} target="_blank" rel="noopener noreferrer" className="row-title-link" onClick={(e) => e.stopPropagation()}>{row.text}</a>
+          ) : row.text}
           {row.tags?.map((t) => <Tag key={t} label={t} />)}
         </span>
         {row.note && <div className="row-note"><NoteWithLinks text={row.note} /></div>}
@@ -284,7 +286,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
   // — modal edit —
   const startEdit = (i) => {
     setEditIdx(i);
-    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "", tags: rows[i].tags ?? [], targetDay: dayKey });
+    setEditVals({ time: rows[i].time, text: rows[i].text, note: rows[i].note ?? "", tags: rows[i].tags ?? [], url: rows[i].url ?? "", targetDay: dayKey });
   };
   const saveEdit = () => {
     if (editIdx === null) return;
@@ -301,6 +303,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
         text: editVals.text.trim() || src.text || "",
         note: editVals.note.trim() || undefined,
         tags: editVals.tags?.length ? editVals.tags : undefined,
+        url: editVals.url?.trim() || undefined,
       };
       if (moved.text) onMoveRow?.(moved, targetDay);
     } else {
@@ -312,6 +315,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
               text: editVals.text.trim() || row.text,
               note: editVals.note.trim() || undefined,
               tags: editVals.tags?.length ? editVals.tags : undefined,
+              url: editVals.url?.trim() || undefined,
             }
           : row
       )].sort((a, b) => (a.time ?? "").localeCompare(b.time ?? "")));
@@ -338,7 +342,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
     const newId = `${dayKey}-${Date.now()}`;
     setRows((prev) => [...prev, { time: newTime, text: "", _id: newId }]);
     setEditIdx(rows.length);
-    setEditVals({ time: newTime, text: "", note: "", tags: [], targetDay: dayKey });
+    setEditVals({ time: newTime, text: "", note: "", tags: [], url: "", targetDay: dayKey });
     setIsNewRow(true);
   };
 
@@ -530,6 +534,18 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
               </div>
             </div>
             <div className="modal-field">
+              <label>Link <span>(opzionale)</span></label>
+              <input
+                className="modal-input"
+                value={editVals.url ?? ""}
+                placeholder="https://…"
+                type="url"
+                inputMode="url"
+                onChange={(e) => setEditVals((v) => ({ ...v, url: e.target.value }))}
+                onKeyDown={handleKey}
+              />
+            </div>
+            <div className="modal-field">
               <label>Tag <span>(opzionale)</span></label>
               <div className="modal-tags">
                 {Object.entries(tagColors).map(([tag, s]) => {
@@ -679,7 +695,7 @@ function JollySection({ jollies, onChange, allDays, onInsert }) {
 
   const openAdd = () => {
     setEditingId(`jolly_${Date.now()}`);
-    setEditVals({ time: "09:00", text: "", note: "", tags: [] });
+    setEditVals({ time: "09:00", text: "", note: "", tags: [], url: "" });
     setIsNew(true);
     setOpen(true);
   };
@@ -687,7 +703,7 @@ function JollySection({ jollies, onChange, allDays, onInsert }) {
   const openEdit = (id) => {
     const a = jollies[id];
     setEditingId(id);
-    setEditVals({ time: a.time ?? "09:00", text: a.text ?? "", note: a.note ?? "", tags: a.tags ?? [] });
+    setEditVals({ time: a.time ?? "09:00", text: a.text ?? "", note: a.note ?? "", tags: a.tags ?? [], url: a.url ?? "" });
     setIsNew(false);
   };
 
@@ -700,6 +716,7 @@ function JollySection({ jollies, onChange, allDays, onInsert }) {
         text: editVals.text.trim(),
         note: editVals.note?.trim() || undefined,
         tags: editVals.tags?.length ? editVals.tags : undefined,
+        url: editVals.url?.trim() || undefined,
       },
     });
     setEditingId(null);
@@ -749,7 +766,9 @@ function JollySection({ jollies, onChange, allDays, onInsert }) {
               <span className="time">{activity.time}</span>
               <div className="row-content">
                 <span className="row-text">
-                  {activity.text}
+                  {activity.url ? (
+                    <a href={activity.url} target="_blank" rel="noopener noreferrer" className="row-title-link" onClick={(e) => e.stopPropagation()}>{activity.text}</a>
+                  ) : activity.text}
                   {activity.tags?.map((t) => <Tag key={t} label={t} />)}
                 </span>
                 {activity.note && <div className="row-note"><NoteWithLinks text={activity.note} /></div>}
