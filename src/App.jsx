@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors,
 } from "@dnd-kit/core";
@@ -11,6 +11,7 @@ import L from "leaflet";
 import { sections, tagColors, badgeStyles } from "./data";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
+import { loadItinerary, saveItinerary } from "./firebase";
 
 // ── map helpers ──────────────────────────────────────────────────────────────
 
@@ -163,28 +164,25 @@ function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit
 
 // ── day card ─────────────────────────────────────────────────────────────────
 
-function DayCard({ day, weatherData }) {
+function DayCard({ day, weatherData, initialRows, onRowsChange }) {
   const [open, setOpen] = useState(true);
-  const storageKey = `japan-day-${day.date ?? day.title}`;
-  const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }));
+  const dayKey = day.date ?? day.title;
+  const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
 
   const [rows, setRows] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // re-merge coords from default data in case they were saved before coords existed
-        return parsed.map((row) => {
-          const def = defaultRows.find((d) => d._id === row._id);
-          return { ...row, coords: row.coords ?? def?.coords };
-        });
-      }
-    } catch {}
+    if (initialRows?.length) {
+      return initialRows.map((row) => {
+        const def = defaultRows.find((d) => d._id === row._id);
+        return { ...row, coords: row.coords ?? def?.coords };
+      });
+    }
     return defaultRows;
   });
 
+  const isFirstRowEffect = useRef(true);
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(rows));
+    if (isFirstRowEffect.current) { isFirstRowEffect.current = false; return; }
+    onRowsChange?.(dayKey, rows);
   }, [rows]);
   const [editIdx, setEditIdx] = useState(null);
   const [editVals, setEditVals] = useState({});
@@ -309,7 +307,7 @@ function DayCard({ day, weatherData }) {
 
 // ── section ───────────────────────────────────────────────────────────────────
 
-function Section({ section, activeSection, onToggle, weatherData }) {
+function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange }) {
   const isOpen = activeSection === section.id;
   return (
     <div className="section">
@@ -320,9 +318,15 @@ function Section({ section, activeSection, onToggle, weatherData }) {
       </button>
       {isOpen && (
         <div className="section-days">
-          {section.days.map((day, i) => (
-            <DayCard key={i} day={day} weatherData={weatherData} />
-          ))}
+          {section.days.map((day, i) => {
+            const dk = day.date ?? day.title;
+            return (
+              <DayCard key={i} day={day} weatherData={weatherData}
+                initialRows={itinerary?.[dk]}
+                onRowsChange={onRowsChange}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -335,6 +339,27 @@ export default function App() {
   const [activeSection, setActiveSection] = useState("osaka");
   const [weatherData, setWeatherData] = useState({});
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState(null);
+  const [itinerary, setItinerary] = useState(null);
+  const hasLoaded = useRef(false);
+  const saveTimer = useRef(null);
+
+  useEffect(() => {
+    loadItinerary()
+      .then((data) => setItinerary(data ?? {}))
+      .catch(() => setItinerary({}));
+  }, []);
+
+  useEffect(() => {
+    if (itinerary === null) return;
+    if (!hasLoaded.current) { hasLoaded.current = true; return; }
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveItinerary(itinerary), 800);
+    return () => clearTimeout(saveTimer.current);
+  }, [itinerary]);
+
+  const handleRowsChange = useCallback((key, rows) => {
+    setItinerary((prev) => ({ ...prev, [key]: rows }));
+  }, []);
 
   useEffect(() => {
     const load = () =>
@@ -351,6 +376,10 @@ export default function App() {
   const weatherLabel = weatherUpdatedAt
     ? `● Live · ${weatherUpdatedAt.getHours().toString().padStart(2, "0")}:${weatherUpdatedAt.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
+
+  if (itinerary === null) {
+    return <div className="page"><p style={{ padding: "2rem", textAlign: "center" }}>Caricamento…</p></div>;
+  }
 
   return (
     <div className="page">
@@ -374,7 +403,7 @@ export default function App() {
 
       <main>
         {sections.map((s) => (
-          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} />
+          <Section key={s.id} section={s} activeSection={activeSection} onToggle={toggle} weatherData={weatherData} itinerary={itinerary} onRowsChange={handleRowsChange} />
         ))}
       </main>
 
