@@ -45,8 +45,20 @@ function MapFitter({ positions }) {
   return null;
 }
 
+function MapDragGuard({ enabled }) {
+  const map = useMap();
+  useEffect(() => {
+    if (enabled) { map.dragging.enable(); map.touchZoom.enable(); }
+    else         { map.dragging.disable(); map.touchZoom.disable(); }
+  }, [map, enabled]);
+  return null;
+}
+
 function DayMap({ points, color }) {
   const positions = points.map((p) => p.coords);
+  const isPointer = window.matchMedia("(hover: hover)").matches;
+  const [enabled, setEnabled] = useState(isPointer);
+
   return (
     <div className="day-map">
       <MapContainer
@@ -58,6 +70,7 @@ function DayMap({ points, color }) {
       >
         <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}" />
         <MapFitter positions={positions} />
+        <MapDragGuard enabled={enabled} />
         {positions.length > 1 && (
           <Polyline positions={positions} color={color} weight={2.5} opacity={0.75} />
         )}
@@ -67,6 +80,11 @@ function DayMap({ points, color }) {
           </Marker>
         ))}
       </MapContainer>
+      {!enabled && (
+        <div className="map-overlay" onClick={() => setEnabled(true)}>
+          <span className="map-overlay-hint">Tocca per navigare</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -496,7 +514,7 @@ function Countdown() {
 
   return (
     <div className="countdown">
-      <span className="countdown-label">✈ Partenza tra</span>
+      <span className="countdown-label">🇯🇵​ Mancano:</span>
       <div className="countdown-units">
         {[
           { n: left.days,  u: "giorni" },
