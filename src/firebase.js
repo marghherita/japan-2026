@@ -17,4 +17,4 @@ export const loadItinerary  = () =>
   get(ref(db, "itinerary")).then((snap) => snap.val() ?? {});
 
 export const saveItinerary  = (data) =>
-  set(ref(db, "itinerary"), data);
+  set(ref(db, "itinerary"), JSON.parse(JSON.stringify(data)));

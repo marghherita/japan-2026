@@ -341,7 +341,6 @@ export default function App() {
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState(null);
   const [itinerary, setItinerary] = useState(null);
   const hasLoaded = useRef(false);
-  const saveTimer = useRef(null);
 
   useEffect(() => {
     loadItinerary()
@@ -352,9 +351,7 @@ export default function App() {
   useEffect(() => {
     if (itinerary === null) return;
     if (!hasLoaded.current) { hasLoaded.current = true; return; }
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveItinerary(itinerary), 800);
-    return () => clearTimeout(saveTimer.current);
+    saveItinerary(itinerary).catch(console.error);
   }, [itinerary]);
 
   const handleRowsChange = useCallback((key, rows) => {
