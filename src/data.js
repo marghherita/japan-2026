@@ -8,6 +8,8 @@ export const sections = [
         badge: "osaka",
         title: "Dom 24 mag — Arrivo",
         weather: "☀️ 32°C · 0%",
+        date: "2026-05-24",
+        city: "osaka",
         rows: [
           { time: "18:00", text: "Atterraggio KIX → Haruka Express verso Osaka", note: "~75 min fino a Tennoji / Shin-Osaka" },
           { time: "20:30", text: "Check-in · passeggiata serale a Dotonbori", note: "Neon, takoyaki — prima serata leggera" },
@@ -17,6 +19,8 @@ export const sections = [
         badge: "osaka",
         title: "Lun 25 mag — Katsuoji + Kobe",
         weather: "☀️ 30°C · 20%",
+        date: "2026-05-25",
+        city: "osaka",
         alert: { type: "warn", text: "⚠️ Prenota il ristorante Kobe beef prima di partire dall'Italia" },
         rows: [
           { time: "07:30", text: "Osaka → Hankyu Line → Minoo → bus (~1h)" },
@@ -33,6 +37,8 @@ export const sections = [
         badge: "osaka",
         title: "Mar 26 mag — Al coperto",
         weather: "☔ 29°C · 80%",
+        date: "2026-05-26",
+        city: "osaka",
         alert: { type: "info", text: "🗺 Kaiyukan → Den Den Town → Shinsaibashi → Dotonbori: quasi tutto senza pioggia" },
         rows: [
           { time: "09:30", text: "Aquarium Kaiyukan — squali balena, razze giganti", tags: ["cultura"], note: "~2h30 · prenotare online" },
@@ -53,6 +59,8 @@ export const sections = [
         badge: "travel",
         title: "Mer 27 mag — Osaka → Kyoto + Arrivo",
         weather: "🌧️ 27°C · 90%",
+        date: "2026-05-27",
+        city: "kyoto",
         alert: { type: "info", text: "🚄 Shin-Osaka → Kyoto: 15 min in Shinkansen · oppure JR Kyoto Line 30 min" },
         rows: [
           { time: "09:00", text: "Check-out Osaka · trasferimento a Kyoto" },
@@ -67,6 +75,8 @@ export const sections = [
         badge: "kyoto",
         title: "Gio 28 mag — Arashiyama + Ovest",
         weather: "⛅ 28°C · 30%",
+        date: "2026-05-28",
+        city: "kyoto",
         alert: { type: "ok", text: "🌤 Mattinata ok — attività all'aperto nella prima parte della giornata" },
         rows: [
           { time: "07:30", text: "Arashiyama — foresta di bambù di Sagano", tags: ["cultura"], note: "Arrivare PRIMA delle 9 · dopo le 10 è affollata · Sagano Line da Kyoto" },
@@ -83,6 +93,8 @@ export const sections = [
         badge: "kyoto",
         title: "Ven 29 mag — Gita Uji + Nara",
         weather: "☀️ 30°C · 20%",
+        date: "2026-05-29",
+        city: "kyoto",
         alert: { type: "ok", text: "☀️ Giornata migliore — ideale per la gita fuori città tutta all'aperto" },
         rows: [
           { time: "08:00", text: "Kyoto → Uji — JR Nara Line (17 min)" },
@@ -101,6 +113,8 @@ export const sections = [
         badge: "kyoto",
         title: "Sab 30 mag — Fushimi · Higashiyama · Filosofo's Path",
         weather: "🌦️ 27°C · 50%",
+        date: "2026-05-30",
+        city: "kyoto",
         alert: { type: "info", text: "🌂 Mattina instabile — partire prestissimo per Fushimi prima della pioggia" },
         rows: [
           { time: "07:00", text: "Fushimi Inari — 10.000 torii rossi nella foresta", tags: ["cultura"], note: "Salire almeno fino a Yotsutsuji · con poca gente è magico · Kintetsu da Kyoto 15 min" },
@@ -123,6 +137,8 @@ export const sections = [
         badge: "travel",
         title: "Dom 31 mag — Kyoto → Tokyo + Arrivo",
         weather: "🌧️ 25°C · 80%",
+        date: "2026-05-31",
+        city: "tokyo",
         alert: { type: "info", text: "🚄 Shinkansen Nozomi Kyoto → Tokyo: ~2h15 · partenza ideale ore 10-11" },
         rows: [
           { time: "08:00", text: "Ultimi acquisti a Nishiki Market o Teramachi", tags: ["shopping"] },
@@ -136,6 +152,8 @@ export const sections = [
         badge: "tokyo",
         title: "Lun 1 giu — Asakusa · Ueno · Yanaka · Ginza",
         weather: "🌧️ 25°C · 90%",
+        date: "2026-06-01",
+        city: "tokyo",
         alert: { type: "warn", text: "🌧️ Pioggia forte — tutto a piedi e al coperto dall'hotel verso sud" },
         rows: [
           { time: "07:30", text: "Senso-ji all'alba — 5 min dall'hotel", tags: ["cultura"], note: "L'unica ora in cui Asakusa è silenziosa · incenso, lanterne, pace" },
@@ -150,6 +168,8 @@ export const sections = [
         badge: "tokyo",
         title: "Mar 2 giu — Harajuku · Yoyogi · Shibuya · Daikanyama",
         weather: "☀️ 27°C · 10%",
+        date: "2026-06-02",
+        city: "tokyo",
         alert: { type: "ok", text: "☀️ Giornata migliore di Tokyo — asse Harajuku→Shibuya→Daikanyama tutto a piedi" },
         rows: [
           { time: "08:30", text: "Meiji Jingu — foresta sacra nel cuore di Tokyo", tags: ["cultura"], note: "Gratuito · dall'alba · cedri centenari · silenzio assoluto" },
@@ -165,6 +185,8 @@ export const sections = [
         badge: "tokyo",
         title: "Mer 3 giu — Shimokitazawa · Shinjuku · Minato · Roppongi",
         weather: "🌦️ 26°C · 60%",
+        date: "2026-06-03",
+        city: "tokyo",
         alert: { type: "info", text: "🌂 Pomeriggio instabile — Shimokitazawa al mattino, poi scendere verso Minato e Roppongi" },
         rows: [
           { time: "09:30", text: "Shimokitazawa — vinili, vintage, café bohémien", tags: ["shopping"], note: "Il quartiere più autentico di Tokyo · live house, librerie indipendenti, curry" },
@@ -180,6 +202,8 @@ export const sections = [
         badge: "tokyo",
         title: "Gio 4 giu — Tsukiji · Kagurazaka · Canal Café · Jimbocho · Nakano",
         weather: "🌦️ 27°C · 50%",
+        date: "2026-06-04",
+        city: "tokyo",
         alert: { type: "info", text: "🚇 Tsukiji → Kagurazaka (metro) → Jimbocho (a piedi 15 min) → Nakano (Chuo Line)" },
         rows: [
           { time: "08:00", text: "Tsukiji mercato esterno — sushi e street food a colazione", tags: ["colazione"], note: "Tamagoyaki, sashimi freschissimo, onigiri · il mercato esterno è ancora attivissimo" },
@@ -195,6 +219,8 @@ export const sections = [
         badge: "dep",
         title: "Ven 5 giu — Mattino + Volo 16:20 HND",
         weather: "🛫 16:20 Haneda",
+        date: "2026-06-05",
+        city: "tokyo",
         alert: { type: "warn", text: "⚠️ Partire dall'hotel entro le 12:30 max · Keikyu da Asakusa ~40 min · check-in 3h prima = entro le 13:20" },
         rows: [
           { time: "07:00", text: "Ultima passeggiata a Senso-ji all'alba", note: "Il commiato più bello possibile — 5 min dall'hotel, incenso, silenzio" },

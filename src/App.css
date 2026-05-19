@@ -170,6 +170,53 @@ body {
   white-space: nowrap;
 }
 
+.hourly-strip {
+  display: flex;
+  overflow-x: auto;
+  gap: 2px;
+  padding: 8px 1rem;
+  background: #fafaf8;
+  border-bottom: .5px solid var(--border-light);
+  scrollbar-width: none;
+}
+
+.hourly-strip::-webkit-scrollbar { display: none; }
+
+.hourly-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 54px;
+  padding: 5px 6px;
+  border-radius: 7px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.hourly-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.03em;
+}
+
+.hourly-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.hourly-temp {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hourly-rain {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
 .chevron {
   font-size: 14px;
   color: var(--text-tertiary);
@@ -219,9 +266,37 @@ body {
   gap: 10px;
   margin-bottom: 7px;
   align-items: flex-start;
+  border-radius: 5px;
+  padding: 2px 4px;
+  margin-left: -4px;
+  margin-right: -4px;
+  cursor: default;
+  transition: background 0.1s;
 }
 
 .row:last-child { margin-bottom: 0; }
+
+.drag-handle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  cursor: grab;
+  user-select: none;
+  padding-top: 2px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.row:hover .drag-handle { opacity: 0.45; }
+
+.row-dragging {
+  opacity: 0.3;
+}
+
+.row-over {
+  background: var(--border-light);
+  outline: 1.5px dashed var(--border);
+}
 
 .time {
   font-size: 11px;
@@ -273,6 +348,16 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.weather-live {
+  color: #22C55E;
+  font-weight: 500;
+}
+
+.weather-loading {
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* MOBILE */
