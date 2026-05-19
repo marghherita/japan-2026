@@ -13,6 +13,7 @@ import { checklistCategories } from "./checklistData";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
 import { loadItinerary, saveItinerary, loadChecklist, saveChecklist } from "./firebase";
+import * as Dialog from "@radix-ui/react-dialog";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -330,18 +331,6 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
 // ── activity modal ───────────────────────────────────────────────────────────
 
 function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays, currentDayKey }) {
-  useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onCancel(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onCancel]);
-
-  useEffect(() => {
-    const y = window.scrollY;
-    document.body.style.cssText = `position:fixed;top:-${y}px;left:0;right:0;overflow-y:scroll`;
-    return () => { document.body.style.cssText = ""; window.scrollTo(0, y); };
-  }, []);
-
   const handleKey = (e) => {
     if (e.key === "Enter") { e.preventDefault(); onSave(); }
   };
@@ -354,124 +343,118 @@ function ActivityModal({ isNew, editVals, setEditVals, onSave, onCancel, allDays
   };
 
   return (
-    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div className="modal">
-        <div className="modal-header">
-          {isNew ? "Nuova attività" : "Modifica attività"}
-        </div>
-        <div className="modal-body">
-          <div className="modal-field">
-            <label>Attività</label>
-            <input
-              className="modal-input"
-              value={editVals.text}
-              placeholder="es. Visita al Fushimi Inari…"
-              onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
-              onKeyDown={handleKey}
-              autoFocus
-            />
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="modal-backdrop" />
+        <Dialog.Content className="modal" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="modal-header">
+            {isNew ? "Nuova attività" : "Modifica attività"}
           </div>
-          <div className="modal-row">
-            <div className="modal-field modal-field-time">
-              <label>Orario</label>
-              <input
-                className="modal-input"
-                type="time"
-                value={editVals.time}
-                onChange={(e) => setEditVals((v) => ({ ...v, time: e.target.value }))}
-                onKeyDown={handleKey}
-              />
-            </div>
-            <div className="modal-field" style={{ flex: 1 }}>
-              <label>Nota <span>(opzionale)</span></label>
-              <input
-                className="modal-input"
-                value={editVals.note}
-                placeholder="prenotazione, link, prezzo…"
-                onChange={(e) => setEditVals((v) => ({ ...v, note: e.target.value }))}
-                onKeyDown={handleKey}
-              />
-            </div>
-          </div>
-          <div className="modal-field">
-            <label>Tag <span>(opzionale)</span></label>
-            <div className="modal-tags">
-              {Object.entries(tagColors).map(([tag, s]) => {
-                const active = editVals.tags?.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    className={`modal-tag${active ? " modal-tag-active" : ""}`}
-                    style={active ? { background: s.bg, color: s.color, borderColor: s.bg } : {}}
-                    onClick={() => toggleTag(tag)}
-                  >{tag}</button>
-                );
-              })}
-            </div>
-          </div>
-          {allDays && allDays.length > 1 && (
+          <div className="modal-body">
             <div className="modal-field">
-              <label>Giorno <span>(sposta attività)</span></label>
-              <select
-                className="modal-select"
-                value={editVals.targetDay ?? currentDayKey}
-                onChange={(e) => setEditVals((v) => ({ ...v, targetDay: e.target.value }))}
-              >
-                {allDays.map((d) => (
-                  <option key={d.key} value={d.key}>{formatDayOption(d)}</option>
-                ))}
-              </select>
+              <label>Attività</label>
+              <input
+                className="modal-input"
+                value={editVals.text}
+                placeholder="es. Visita al Fushimi Inari…"
+                onChange={(e) => setEditVals((v) => ({ ...v, text: e.target.value }))}
+                onKeyDown={handleKey}
+                autoFocus
+              />
             </div>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
-          <button className="modal-btn-save" onClick={onSave}>Salva</button>
-        </div>
-      </div>
-    </div>
+            <div className="modal-row">
+              <div className="modal-field modal-field-time">
+                <label>Orario</label>
+                <input
+                  className="modal-input"
+                  type="time"
+                  value={editVals.time}
+                  onChange={(e) => setEditVals((v) => ({ ...v, time: e.target.value }))}
+                  onKeyDown={handleKey}
+                />
+              </div>
+              <div className="modal-field" style={{ flex: 1 }}>
+                <label>Nota <span>(opzionale)</span></label>
+                <input
+                  className="modal-input"
+                  value={editVals.note}
+                  placeholder="prenotazione, link, prezzo…"
+                  onChange={(e) => setEditVals((v) => ({ ...v, note: e.target.value }))}
+                  onKeyDown={handleKey}
+                />
+              </div>
+            </div>
+            <div className="modal-field">
+              <label>Tag <span>(opzionale)</span></label>
+              <div className="modal-tags">
+                {Object.entries(tagColors).map(([tag, s]) => {
+                  const active = editVals.tags?.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`modal-tag${active ? " modal-tag-active" : ""}`}
+                      style={active ? { background: s.bg, color: s.color, borderColor: s.bg } : {}}
+                      onClick={() => toggleTag(tag)}
+                    >{tag}</button>
+                  );
+                })}
+              </div>
+            </div>
+            {allDays && allDays.length > 1 && (
+              <div className="modal-field">
+                <label>Giorno <span>(sposta attività)</span></label>
+                <select
+                  className="modal-select"
+                  value={editVals.targetDay ?? currentDayKey}
+                  onChange={(e) => setEditVals((v) => ({ ...v, targetDay: e.target.value }))}
+                >
+                  {allDays.map((d) => (
+                    <option key={d.key} value={d.key}>{formatDayOption(d)}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+          <div className="modal-footer">
+            <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+            <button className="modal-btn-save" onClick={onSave}>Salva</button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
 // ── checklist ────────────────────────────────────────────────────────────────
 
 function ChecklistItemModal({ isNew, text, setText, onSave, onCancel }) {
-  useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onCancel(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onCancel]);
-
-  useEffect(() => {
-    const y = window.scrollY;
-    document.body.style.cssText = `position:fixed;top:-${y}px;left:0;right:0;overflow-y:scroll`;
-    return () => { document.body.style.cssText = ""; window.scrollTo(0, y); };
-  }, []);
-
   return (
-    <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div className="modal">
-        <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
-        <div className="modal-body">
-          <div className="modal-field">
-            <label>Voce</label>
-            <input
-              className="modal-input"
-              value={text}
-              placeholder="es. Passaporto, adattatore prese…"
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSave(); } }}
-              autoFocus
-            />
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="modal-backdrop" />
+        <Dialog.Content className="modal" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <div className="modal-header">{isNew ? "Nuova voce" : "Modifica voce"}</div>
+          <div className="modal-body">
+            <div className="modal-field">
+              <label>Voce</label>
+              <input
+                className="modal-input"
+                value={text}
+                placeholder="es. Passaporto, adattatore prese…"
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSave(); } }}
+                autoFocus
+              />
+            </div>
           </div>
-        </div>
-        <div className="modal-footer">
-          <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
-          <button className="modal-btn-save" onClick={onSave}>Salva</button>
-        </div>
-      </div>
-    </div>
+          <div className="modal-footer">
+            <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+            <button className="modal-btn-save" onClick={onSave}>Salva</button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -689,7 +672,7 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div>
-          <h1>Itinerario Giappone <span>— Maggio · Giugno 2026</span></h1>
+          <h1>Janap 2026</h1>
           <p className="header-sub">
             Osaka · Kobe · Kyoto · Uji · Nara · Tokyo &nbsp;·&nbsp; 24 mag – 5 giu 2026
             &nbsp;·&nbsp; <span className={weatherUpdatedAt ? "weather-live" : "weather-loading"}>{weatherLabel}</span>
@@ -713,7 +696,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <span>Itinerario Giappone · Maggio–Giugno 2026</span>
+        <span>Janap 2026</span>
         <span className={weatherUpdatedAt ? "weather-live" : "weather-loading"}>{weatherLabel}</span>
       </footer>
     </div>
