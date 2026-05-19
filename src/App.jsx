@@ -13,7 +13,7 @@ import { sections, tagColors, badgeStyles } from "./data";
 import { checklistCategories } from "./checklistData";
 import { fetchAllWeather } from "./weather";
 import "./App.css";
-import { loadItinerary, saveItinerary, loadChecklist, saveChecklist, loadAlerts, saveAlerts, loadJollies, saveJollies } from "./firebase";
+import { loadItinerary, saveItinerary, loadChecklist, saveChecklist, loadAlerts, saveAlerts, loadTitleOverrides, saveTitleOverrides, loadJollies, saveJollies } from "./firebase";
 import * as Dialog from "@radix-ui/react-dialog";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }) {
 
 // ── day card ─────────────────────────────────────────────────────────────────
 
-function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveRow, alertOverride, onAlertChange }) {
+function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveRow, alertOverride, onAlertChange, titleOverride, titleOverrides, onSwapDay }) {
   const [open, setOpen] = useState(true);
   const dayKey = day.date ?? day.title;
   const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
@@ -260,6 +260,12 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
   const [isNewRow, setIsNewRow] = useState(false);
   const badge = badgeStyles[day.badge];
   const [alertEditOpen, setAlertEditOpen] = useState(false);
+  const [daySwapOpen, setDaySwapOpen] = useState(false);
+
+  const titleParts = day.title.split(" — ");
+  const displayTitle = titleOverride !== undefined
+    ? (titleOverride ? `${titleParts[0]} — ${titleOverride}` : titleParts[0])
+    : day.title;
   const effectiveAlert = alertOverride !== undefined
     ? (alertOverride?.text ? alertOverride : null)
     : (day.alert || null);
@@ -365,6 +371,15 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
         currentDayKey={dayKey}
       />
     )}
+    {daySwapOpen && (
+      <DaySwapModal
+        allDays={allDays}
+        currentDayKey={dayKey}
+        titleOverrides={titleOverrides}
+        onSwap={(targetKey) => { onSwapDay?.(dayKey, targetKey); setDaySwapOpen(false); }}
+        onCancel={() => setDaySwapOpen(false)}
+      />
+    )}
     {alertEditOpen && (
       <AlertEditModal
         current={effectiveAlert}
@@ -378,7 +393,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
         <span className="badge" style={{ background: badge.bg, color: badge.color }}>
           {badge.label}
         </span>
-        <span className="day-title">{day.title}</span>
+        <span className="day-title">{displayTitle}</span>
         {(() => {
           const done = rows.filter((r) => r.done).length;
           const total = rows.length;
@@ -431,6 +446,7 @@ function DayCard({ day, weatherData, initialRows, onRowsChange, allDays, onMoveR
           <button className="add-row-btn" onClick={addRow}>
             <span className="add-row-icon">＋</span> aggiungi attività
           </button>
+          <button className="day-swap-btn" onClick={() => setDaySwapOpen(true)}>⇄ scambia giornata</button>
         </div>
       )}
     </div>
@@ -796,6 +812,46 @@ function JollySection({ jollies, onChange, allDays, onInsert }) {
   );
 }
 
+// ── day swap modal ───────────────────────────────────────────────────────────
+
+function DaySwapModal({ allDays, currentDayKey, titleOverrides, onSwap, onCancel }) {
+  const { modalRef, dragProps } = useSwipeDismiss(onCancel);
+  const otherDays = allDays.filter((d) => d.key !== currentDayKey);
+
+  const getDisplayTitle = (d) => {
+    const ov = titleOverrides?.[d.key];
+    if (ov === undefined) return d.label;
+    const prefix = d.label.split(" — ")[0];
+    return ov ? `${prefix} — ${ov}` : d.label;
+  };
+
+  return (
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="modal-backdrop" />
+        <Dialog.Content className="modal" ref={modalRef} onOpenAutoFocus={(e) => e.preventDefault()} aria-describedby={undefined}>
+          <div className="modal-drag-zone" {...dragProps}>
+            <div className="modal-pill" />
+            <Dialog.Title className="modal-header">Scambia con un'altra giornata</Dialog.Title>
+          </div>
+          <div className="modal-body">
+            <div className="jolly-day-list">
+              {otherDays.map((d) => (
+                <button key={d.key} className="jolly-day-item" onClick={() => onSwap(d.key)}>
+                  {getDisplayTitle(d)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="modal-btn-cancel" onClick={onCancel}>Annulla</button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
 // ── countdown ────────────────────────────────────────────────────────────────
 
 const DEPART = new Date("2026-05-24T00:00:00");
@@ -974,7 +1030,7 @@ function Checklist({ state, onChange }) {
 
 // ── section ───────────────────────────────────────────────────────────────────
 
-function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange, allDays, onMoveRow, cardVersions, alerts, onAlertChange }) {
+function Section({ section, activeSection, onToggle, weatherData, itinerary, onRowsChange, allDays, onMoveRow, cardVersions, alerts, onAlertChange, titleOverrides, onSwapDay }) {
   const isOpen = activeSection === section.id;
   return (
     <div className="section">
@@ -998,6 +1054,9 @@ function Section({ section, activeSection, onToggle, weatherData, itinerary, onR
                 onMoveRow={onMoveRow}
                 alertOverride={alerts?.[dk]}
                 onAlertChange={onAlertChange}
+                titleOverride={titleOverrides?.[dk]}
+                titleOverrides={titleOverrides}
+                onSwapDay={onSwapDay}
               />
             );
           })}
@@ -1022,6 +1081,8 @@ export default function App() {
   const hasAlertsLoaded = useRef(false);
   const [jollies, setJollies] = useState(null);
   const hasJolliesLoaded = useRef(false);
+  const [titleOverrides, setTitleOverrides] = useState(null);
+  const hasTitleOverridesLoaded = useRef(false);
 
   const allDays = useMemo(() =>
     sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
@@ -1040,6 +1101,9 @@ export default function App() {
     withTimeout(loadJollies())
       .then((data) => setJollies(data ?? {}))
       .catch(() => setJollies({}));
+    withTimeout(loadTitleOverrides())
+      .then((data) => setTitleOverrides(data ?? {}))
+      .catch(() => setTitleOverrides({}));
   }, []);
 
   useEffect(() => {
@@ -1066,6 +1130,12 @@ export default function App() {
     saveJollies(jollies).catch(console.error);
   }, [jollies]);
 
+  useEffect(() => {
+    if (titleOverrides === null) return;
+    if (!hasTitleOverridesLoaded.current) { hasTitleOverridesLoaded.current = true; return; }
+    saveTitleOverrides(titleOverrides).catch(console.error);
+  }, [titleOverrides]);
+
   const handleRowsChange = useCallback((key, rows) => {
     setItinerary((prev) => ({ ...prev, [key]: rows }));
   }, []);
@@ -1089,6 +1159,47 @@ export default function App() {
   const handleJolliesChange = useCallback((newJollies) => {
     setJollies(newJollies);
   }, []);
+
+  const handleSwapDays = useCallback((keyA, keyB) => {
+    const allDaysList = sections.flatMap((s) => s.days);
+    const dayA = allDaysList.find((d) => (d.date ?? d.title) === keyA);
+    const dayB = allDaysList.find((d) => (d.date ?? d.title) === keyB);
+
+    const getSubtitle = (key, day) => {
+      const ov = titleOverrides?.[key];
+      if (ov !== undefined) return ov;
+      return day?.title?.split(" — ").slice(1).join(" — ") ?? "";
+    };
+
+    const getRows = (key, day) =>
+      itinerary?.[key]?.length
+        ? itinerary[key]
+        : (day?.rows?.map((r, i) => ({ ...r, _id: `${key}-${i}` })) ?? []);
+
+    const getEffectiveAlert = (key, day) =>
+      alerts?.[key] !== undefined ? alerts[key] : (day?.alert ?? null);
+
+    const rowsA = getRows(keyA, dayA);
+    const rowsB = getRows(keyB, dayB);
+    const subA = getSubtitle(keyA, dayA);
+    const subB = getSubtitle(keyB, dayB);
+    const alertA = getEffectiveAlert(keyA, dayA);
+    const alertB = getEffectiveAlert(keyB, dayB);
+    const ts = Date.now();
+
+    setItinerary((prev) => ({
+      ...prev,
+      [keyA]: rowsB.map((r, i) => ({ ...r, _id: `${keyA}-sw-${ts}-${i}` })),
+      [keyB]: rowsA.map((r, i) => ({ ...r, _id: `${keyB}-sw-${ts}-${i}` })),
+    }));
+    setTitleOverrides((prev) => ({ ...prev, [keyA]: subB, [keyB]: subA }));
+    setAlerts((prev) => ({ ...prev, [keyA]: alertB, [keyB]: alertA }));
+    setCardVersions((prev) => ({
+      ...prev,
+      [keyA]: (prev[keyA] ?? 0) + 1,
+      [keyB]: (prev[keyB] ?? 0) + 1,
+    }));
+  }, [itinerary, titleOverrides, alerts]);
 
   const handleInsertJollyActivity = useCallback((jollyId, dayKey) => {
     const activity = jollies?.[jollyId];
@@ -1132,7 +1243,7 @@ export default function App() {
     ? `Live · ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
     : "Caricamento meteo…";
 
-  if (itinerary === null || checklist === null || alerts === null || jollies === null) {
+  if (itinerary === null || checklist === null || alerts === null || jollies === null || titleOverrides === null) {
     return (
       <div className="page">
         <div className="loading-screen">
@@ -1183,6 +1294,8 @@ export default function App() {
             cardVersions={cardVersions}
             alerts={alerts}
             onAlertChange={handleAlertChange}
+            titleOverrides={titleOverrides}
+            onSwapDay={handleSwapDays}
           />
         ))}
       </main>

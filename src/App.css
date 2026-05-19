@@ -449,6 +449,16 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* ── DAY SWAP ───────────────────────────────────────────────────────────── */
+.day-swap-btn {
+  display: block; width: 100%; background: none; border: none;
+  border-top: .5px solid var(--border-light); margin-top: 6px;
+  padding: 8px 0; font-size: 11px; color: var(--text-tertiary);
+  cursor: pointer; font-family: inherit; letter-spacing: 0.03em;
+  text-align: center;
+}
+.day-swap-btn:active { color: var(--text-secondary); }
+
 /* ── ADD ROW BUTTON ─────────────────────────────────────────────────────── */
 .add-row-btn {
   display: flex;

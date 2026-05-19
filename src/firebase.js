@@ -31,6 +31,12 @@ export const loadAlerts = () =>
 export const saveAlerts = (data) =>
   set(ref(db, "alerts"), JSON.parse(JSON.stringify(data)));
 
+export const loadTitleOverrides = () =>
+  get(ref(db, "titleOverrides")).then((snap) => snap.val() ?? {});
+
+export const saveTitleOverrides = (data) =>
+  set(ref(db, "titleOverrides"), JSON.parse(JSON.stringify(data)));
+
 export const loadJollies = () =>
   get(ref(db, "jollies")).then((snap) => snap.val() ?? {});
 
