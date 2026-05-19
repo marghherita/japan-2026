@@ -1167,7 +1167,7 @@ export default function App() {
 
       <main>
         <Countdown />
-        <Checklist state={checklist} onChange={handleChecklistChange} />
+        {DEPART > new Date() && <Checklist state={checklist} onChange={handleChecklistChange} />}
         <JollySection jollies={jollies} onChange={handleJolliesChange} allDays={allDays} onInsert={handleInsertJollyActivity} />
         {sections.map((s) => (
           <Section
