@@ -10,7 +10,6 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-
 import L from "leaflet";
 import { sections, tagColors, badgeStyles } from "./data";
 import { fetchAllWeather } from "./weather";
-import { dayMapPoints } from "./dayMaps";
 import "./App.css";
 
 // ── map helpers ──────────────────────────────────────────────────────────────
@@ -167,13 +166,21 @@ function SortableRow({ id, row, idx, isEditing, editVals, setEditVals, startEdit
 function DayCard({ day, weatherData }) {
   const [open, setOpen] = useState(true);
   const storageKey = `japan-day-${day.date ?? day.title}`;
+  const defaultRows = day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }));
 
   const [rows, setRows] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // re-merge coords from default data in case they were saved before coords existed
+        return parsed.map((row) => {
+          const def = defaultRows.find((d) => d._id === row._id);
+          return { ...row, coords: row.coords ?? def?.coords };
+        });
+      }
     } catch {}
-    return day.rows.map((r, i) => ({ ...r, _id: `${day.date ?? day.title}-${i}` }));
+    return defaultRows;
   });
 
   useEffect(() => {
@@ -266,9 +273,10 @@ function DayCard({ day, weatherData }) {
 
       {open && hourlySlots && <HourlyStrip slots={hourlySlots} />}
 
-      {open && dayMapPoints[day.date] && (
-        <DayMap points={dayMapPoints[day.date]} color={badgeStyles[day.badge].color} />
-      )}
+      {open && (() => {
+        const pts = rows.filter((r) => r.coords).map((r) => ({ label: r.text, coords: r.coords }));
+        return pts.length > 0 && <DayMap points={pts} color={badgeStyles[day.badge].color} />;
+      })()}
 
       {open && (
         <div className="day-body">
