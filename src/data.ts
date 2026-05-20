@@ -1,0 +1,209 @@
+import type { SectionData, TagStyle, BadgeStyle } from './types';
+
+export const sections: SectionData[] = [
+  {
+    id: 'osaka',
+    label: '🏯 Osaka',
+    subtitle: '24 · 25 · 26 maggio',
+    days: [
+      {
+        badge: 'osaka', title: 'Dom 24 mag — Arrivo', weather: '☀️ 32°C · 0%', date: '2026-05-24', city: 'osaka',
+        rows: [
+          { time: '18:00', text: 'Atterraggio KIX → Haruka Express verso Osaka', note: '~75 min fino a Tennoji / Shin-Osaka' },
+          { time: '20:30', text: 'Check-in · passeggiata serale a Dotonbori', note: 'Neon, takoyaki — prima serata leggera', coords: [34.6687, 135.5013] },
+        ],
+      },
+      {
+        badge: 'osaka', title: 'Lun 25 mag — Katsuoji + Kobe', weather: '☀️ 30°C · 20%', date: '2026-05-25', city: 'osaka',
+        alert: { type: 'warn', text: '⚠️ Prenota il ristorante Kobe beef prima di partire dall\'Italia' },
+        rows: [
+          { time: '07:30', text: 'Osaka → Hankyu Line → Minoo → bus (~1h)' },
+          { time: '08:45', text: 'Katsuoji — tempio dei Daruma nel bosco', tags: ['cultura'], coords: [34.8557, 135.4753] },
+          { time: '10:30', text: 'Verso Kobe → bus + Hankyu → Sannomiya' },
+          { time: '12:00', text: 'Kobe beef teppanyaki — Mouriya / Steak Land / Ishida', tags: ['pranzo'], coords: [34.6913, 135.1955] },
+          { time: '14:00', text: 'Quartiere Kitano — ville europee dell\'800 + vista porto', tags: ['cultura'], coords: [34.6972, 135.1893] },
+          { time: '15:30', text: 'Meriken Park & porto', coords: [34.6842, 135.1884] },
+          { time: '17:00', text: 'Nankinmachi — Chinatown · street food', tags: ['street food'], coords: [34.6887, 135.1899] },
+          { time: '18:30', text: 'Rientro a Osaka — JR/Hankyu da Sannomiya (~30 min)' },
+        ],
+      },
+      {
+        badge: 'osaka', title: 'Mar 26 mag — Al coperto', weather: '☔ 29°C · 80%', date: '2026-05-26', city: 'osaka',
+        alert: { type: 'info', text: '🗺 Kaiyukan → Den Den Town → Shinsaibashi → Dotonbori: quasi tutto senza pioggia' },
+        rows: [
+          { time: '09:30', text: 'Aquarium Kaiyukan — squali balena, razze giganti', tags: ['cultura'], note: '~2h30 · prenotare online', coords: [34.6547, 135.4282] },
+          { time: '12:00', text: 'Pranzo Tempozan Marketplace — food court collegata', tags: ['pranzo'] },
+          { time: '13:30', text: 'Den Den Town — anime, retrogaming, manga', tags: ['shopping'], coords: [34.6626, 135.5066] },
+          { time: '15:30', text: 'Shinsaibashi & Amerika-mura — galleria coperta 600m', tags: ['shopping'], coords: [34.6721, 135.5012] },
+          { time: '19:30', text: 'Cena finale a Dotonbori', tags: ['cena'], coords: [34.6687, 135.5013] },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'kyoto',
+    label: '⛩️ Kyoto',
+    subtitle: '27 · 28 · 29 · 30 maggio',
+    days: [
+      {
+        badge: 'travel', title: 'Mer 27 mag — Osaka → Kyoto + Arrivo', weather: '🌧️ 27°C · 90%', date: '2026-05-27', city: 'kyoto',
+        alert: { type: 'info', text: '🚄 Shin-Osaka → Kyoto: 15 min in Shinkansen · oppure JR Kyoto Line 30 min' },
+        rows: [
+          { time: '09:00', text: 'Check-out Osaka · trasferimento a Kyoto' },
+          { time: '11:00', text: 'Check-in · deposito bagagli' },
+          { time: '12:30', text: 'Nishiki Market — mercato coperto "il frigorifero di Kyoto"', tags: ['pranzo'], note: 'Tofu, tsukemono, tamagoyaki, street food locale · tutto al coperto', coords: [35.0046, 135.7642] },
+          { time: '14:30', text: 'Gion — machiya e vicoli in pietra', tags: ['cultura'], note: 'Con la pioggia Gion è ancora più suggestiva · possibile avvistamento maiko', coords: [35.0037, 135.7786] },
+          { time: '16:30', text: 'Kennin-ji — il più antico tempio Zen di Kyoto', tags: ['cultura'], note: 'Al coperto · giardini di pietra · draghi affrescati sul soffitto', coords: [35.0003, 135.7773] },
+          { time: '19:00', text: 'Cena a Pontocho — vicolo dei ristoranti sul fiume', tags: ['cena'], coords: [35.0074, 135.7717] },
+        ],
+      },
+      {
+        badge: 'kyoto', title: 'Gio 28 mag — Arashiyama + Ovest', weather: '⛅ 28°C · 30%', date: '2026-05-28', city: 'kyoto',
+        alert: { type: 'ok', text: '🌤 Mattinata ok — attività all\'aperto nella prima parte della giornata' },
+        rows: [
+          { time: '07:30', text: 'Arashiyama — foresta di bambù di Sagano', tags: ['cultura'], note: 'Arrivare PRIMA delle 9 · dopo le 10 è affollata · Sagano Line da Kyoto', coords: [35.0168, 135.6717] },
+          { time: '09:00', text: 'Tenryu-ji — giardino Zen UNESCO con vista montagne', tags: ['cultura'], coords: [35.0168, 135.6714] },
+          { time: '10:30', text: 'Passeggiata lungo il fiume Oi · Togetsukyo bridge', tags: ['parco'], coords: [35.0125, 135.6788] },
+          { time: '12:00', text: 'Pranzo ad Arashiyama — tofu kaiseki o soba di montagna', tags: ['pranzo'] },
+          { time: '14:00', text: 'Kinkaku-ji — il Padiglione d\'Oro', tags: ['cultura'], note: 'Il riflesso sull\'acqua è iconico · arrivare presto anche qui', coords: [35.0394, 135.7292] },
+          { time: '15:30', text: 'Ryoan-ji — il giardino di rocce Zen per eccellenza', tags: ['cultura'], note: '15 sassi, nessuno visibile tutti insieme — il mistero più famoso del Giappone', coords: [35.0344, 135.7184] },
+          { time: '17:30', text: 'Teramachi — shopping tradizionale e ceramiche', tags: ['shopping'] },
+          { time: '19:30', text: 'Cena in izakaya a Kawaramachi', tags: ['cena'], coords: [35.0048, 135.7701] },
+        ],
+      },
+      {
+        badge: 'kyoto', title: 'Ven 29 mag — Gita Uji + Nara', weather: '☀️ 30°C · 20%', date: '2026-05-29', city: 'kyoto',
+        alert: { type: 'ok', text: '☀️ Giornata migliore — ideale per la gita fuori città tutta all\'aperto' },
+        rows: [
+          { time: '08:00', text: 'Kyoto → Uji — JR Nara Line (17 min)' },
+          { time: '08:30', text: 'Byodo-in — tempio UNESCO sull\'acqua, era Heian', tags: ['cultura'], note: 'Il tempio stampato sullo yen da 10 · riflesso sul lago con il sole mattutino', coords: [34.8884, 135.8070] },
+          { time: '10:00', text: 'Uji-gami Jinja — il santuario Shinto più antico del Giappone', tags: ['cultura'], coords: [34.8912, 135.8101] },
+          { time: '11:00', text: 'Tè matcha a Uji — capitale giapponese del matcha', tags: ['matcha'], note: 'Tsuen Tea (teahouse più antica del mondo) · gelato matcha, soba al matcha' },
+          { time: '12:00', text: 'Uji → Nara — JR Nara Line diretta (45 min)' },
+          { time: '13:00', text: 'Nara Park — cervi liberi sul prato enorme', tags: ['parco'], note: 'Cracker per i cervi all\'ingresso · sedersi sul prato · picnic con i cervi intorno', coords: [34.6851, 135.8328] },
+          { time: '14:00', text: 'Todai-ji — il Grande Buddha più grande del mondo', tags: ['cultura'], note: '29m di bronzo · l\'edificio in legno più grande al mondo', coords: [34.6887, 135.8398] },
+          { time: '15:30', text: 'Kasuga Taisha — santuario con 3000 lanterne di pietra', tags: ['cultura'], coords: [34.6815, 135.8479] },
+          { time: '17:00', text: 'Rientro a Kyoto — JR Nara Line (~45 min)' },
+          { time: '19:00', text: 'Gion di sera — luci calde, maiko, atmosfera autentica', tags: ['cultura'], coords: [35.0037, 135.7786] },
+        ],
+      },
+      {
+        badge: 'kyoto', title: 'Sab 30 mag — Fushimi · Higashiyama · Filosofo\'s Path', weather: '🌦️ 27°C · 50%', date: '2026-05-30', city: 'kyoto',
+        alert: { type: 'info', text: '🌂 Mattina instabile — partire prestissimo per Fushimi prima della pioggia' },
+        rows: [
+          { time: '07:00', text: 'Fushimi Inari — 10.000 torii rossi nella foresta', tags: ['cultura'], note: 'Salire almeno fino a Yotsutsuji · con poca gente è magico · Kintetsu da Kyoto 15 min', coords: [34.9671, 135.7727] },
+          { time: '09:30', text: 'Higashiyama — Sannenzaka e Ninenzaka', tags: ['cultura'], note: 'Vie lastricate in pietra dell\'era Edo · ceramiche, ventagli, kimono artigianali', coords: [34.9979, 135.7784] },
+          { time: '11:00', text: 'Kiyomizu-dera — il tempio sulla scogliera (UNESCO)', tags: ['cultura'], note: 'Terrazza di legno senza chiodi · vista su tutta Kyoto', coords: [34.9948, 135.7851] },
+          { time: '12:30', text: 'Pranzo a Higashiyama — kaiseki leggero o bentō', tags: ['pranzo'] },
+          { time: '14:00', text: 'Filosofo\'s Path — 2km lungo il canale tra i ciliegi', tags: ['passeggiata'], note: 'Nanzen-ji a fine percorso · uno dei posti più belli di Kyoto', coords: [35.0152, 135.7838] },
+          { time: '15:30', text: 'Heian Jingu + giardini — riposo sul prato', tags: ['parco'], note: 'Giardini enormi e tranquilli · laghetti, iris, prati · ingresso ¥600', coords: [35.0166, 135.7822] },
+          { time: '17:30', text: 'Kawaramachi — cena in un locale contemporaneo + craft beer', tags: ['cena'], note: 'Vita di città moderna · Kyoto non è solo templi', coords: [35.0048, 135.7701] },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tokyo',
+    label: '🗼 Tokyo',
+    subtitle: '31 mag · 1 · 2 · 3 · 4 · 5 giugno',
+    days: [
+      {
+        badge: 'travel', title: 'Dom 31 mag — Kyoto → Tokyo + Arrivo', weather: '🌧️ 25°C · 80%', date: '2026-05-31', city: 'tokyo',
+        alert: { type: 'info', text: '🚄 Shinkansen Nozomi Kyoto → Tokyo: ~2h15 · partenza ideale ore 10-11' },
+        rows: [
+          { time: '08:00', text: 'Ultimi acquisti a Nishiki Market o Teramachi', tags: ['shopping'] },
+          { time: '10:30', text: 'Shinkansen Nozomi Kyoto → Tokyo' },
+          { time: '13:00', text: 'Arrivo Tokyo · check-in hotel ad Asakusa' },
+          { time: '15:00', text: 'Akihabara — coperto, vicino all\'hotel', tags: ['shopping'], note: 'Elettronica, anime, retrogaming — perfetto con la pioggia', coords: [35.7022, 139.7741] },
+          { time: '19:00', text: 'Cena a Jimbocho — curry yoshoku o ramen', tags: ['cena'] },
+        ],
+      },
+      {
+        badge: 'tokyo', title: 'Lun 1 giu — Asakusa · Ueno · Yanaka · Ginza', weather: '🌧️ 25°C · 90%', date: '2026-06-01', city: 'tokyo',
+        alert: { type: 'warn', text: '🌧️ Pioggia forte — tutto a piedi e al coperto dall\'hotel verso sud' },
+        rows: [
+          { time: '07:30', text: 'Senso-ji all\'alba — 5 min dall\'hotel', tags: ['cultura'], note: 'L\'unica ora in cui Asakusa è silenziosa · incenso, lanterne, pace', coords: [35.7148, 139.7967] },
+          { time: '09:00', text: 'Nakamise-dori · souvenir e shopping tradizionale', tags: ['shopping'] },
+          { time: '10:00', text: 'Yanaka — case di legno, Yanaka Ginza, cimitero letterario', tags: ['cultura'], note: 'Il quartiere più autentico di Tokyo · atmosfera anni \'50 intatta', coords: [35.7219, 139.7668] },
+          { time: '12:00', text: 'Ueno — pranzo e Tokyo National Museum', tags: ['cultura'], note: 'La più grande collezione di arte giapponese al mondo · coperto · vale 1-2h', coords: [35.7189, 139.7762] },
+          { time: '15:00', text: 'Ginza — Itoya, Muji flagship, gallerie d\'arte', tags: ['shopping'], coords: [35.6716, 139.7646] },
+          { time: '19:00', text: 'Cena a Ginza o Tsukiji esterno', tags: ['cena'], coords: [35.6654, 139.7707] },
+        ],
+      },
+      {
+        badge: 'tokyo', title: 'Mar 2 giu — Harajuku · Yoyogi · Shibuya · Daikanyama', weather: '☀️ 27°C · 10%', date: '2026-06-02', city: 'tokyo',
+        alert: { type: 'ok', text: '☀️ Giornata migliore di Tokyo — asse Harajuku→Shibuya→Daikanyama tutto a piedi' },
+        rows: [
+          { time: '08:30', text: 'Meiji Jingu — foresta sacra nel cuore di Tokyo', tags: ['cultura'], note: 'Gratuito · dall\'alba · cedri centenari · silenzio assoluto', coords: [35.6763, 139.6993] },
+          { time: '10:00', text: 'Parco Yoyogi — colazione sul prato', tags: ['parco'], note: 'Conbini a 2 min · sedersi sull\'erba · skaters, musicisti', coords: [35.6714, 139.6944] },
+          { time: '11:30', text: 'Harajuku — Takeshita Street + Ura-Harajuku', tags: ['shopping'], note: 'Moda underground nei vicoli dietro Takeshita — più interessante della via principale', coords: [35.6702, 139.7027] },
+          { time: '13:00', text: 'Omotesando — brunch in un café di design', tags: ['pranzo'], coords: [35.6652, 139.7103] },
+          { time: '14:30', text: 'Shibuya crossing + Shibuya Sky al tramonto', tags: ['vista'], note: 'Prenotare online · al tramonto è la miglior vista di Tokyo', coords: [35.6595, 139.7005] },
+          { time: '17:00', text: 'Daikanyama — Tsutaya Books, café, boutique', tags: ['shopping'], note: '10 min a piedi da Shibuya · atmosfera Parigi-Tokyo', coords: [35.6484, 139.7040] },
+          { time: '19:30', text: 'Cena a Nakameguro — lungo il canale illuminato', tags: ['cena'], coords: [35.6423, 139.6994] },
+        ],
+      },
+      {
+        badge: 'tokyo', title: 'Mer 3 giu — Shimokitazawa · Shinjuku · Minato · Roppongi', weather: '🌦️ 26°C · 60%', date: '2026-06-03', city: 'tokyo',
+        alert: { type: 'info', text: '🌂 Pomeriggio instabile — Shimokitazawa al mattino, poi scendere verso Minato e Roppongi' },
+        rows: [
+          { time: '09:30', text: 'Shimokitazawa — vinili, vintage, café bohémien', tags: ['shopping'], note: 'Il quartiere più autentico di Tokyo · live house, librerie indipendenti, curry', coords: [35.6614, 139.6680] },
+          { time: '12:00', text: 'Pranzo a Shimokitazawa — curry artigianale', tags: ['pranzo'] },
+          { time: '13:30', text: 'Shinjuku — Omoide Yokocho + Kabukicho', tags: ['cultura'], note: 'Yakitori fumanti nel vicolo showa · poi la torre Kabukicho per i neon', coords: [35.6938, 139.7034] },
+          { time: '15:00', text: 'Shiba Park + Tokyo Tower', tags: ['vista'], note: 'Parco tranquillo ai piedi della Tokyo Tower · prato verde, tempio Zojo-ji, vista iconica sulla torre rossa', coords: [35.6586, 139.7454] },
+          { time: '16:30', text: 'Azabudai Hills — architettura Heatherwick, giardini pensili', tags: ['cultura'], note: 'Il complesso più avanzato di Tokyo (2023) · 5 min a piedi da Shiba · food hall di alta qualità', coords: [35.6623, 139.7395] },
+          { time: '18:00', text: 'Roppongi — Mori Art Museum al 53° piano', tags: ['cultura'], note: 'Arte contemporanea + vista panoramica · aperto fino alle 22 · tutto in Minato-ku', coords: [35.6628, 139.7315] },
+          { time: '20:30', text: 'Cena ad Azabu-Juban — izakaya di quartiere', tags: ['cena'], note: 'Il villaggio nel cuore di Minato — meno turistico, molto locale', coords: [35.6555, 139.7355] },
+        ],
+      },
+      {
+        badge: 'tokyo', title: 'Gio 4 giu — Tsukiji · Kagurazaka · Canal Café · Jimbocho · Nakano', weather: '🌦️ 27°C · 50%', date: '2026-06-04', city: 'tokyo',
+        alert: { type: 'info', text: '🚇 Tsukiji → Kagurazaka (metro) → Jimbocho (a piedi 15 min) → Nakano (Chuo Line)' },
+        rows: [
+          { time: '08:00', text: 'Tsukiji mercato esterno — sushi e street food a colazione', tags: ['colazione'], note: 'Tamagoyaki, sashimi freschissimo, onigiri · il mercato esterno è ancora attivissimo', coords: [35.6654, 139.7707] },
+          { time: '10:00', text: 'Kagurazaka — il quartiere francese-giapponese di Tokyo', tags: ['cultura'], note: 'Vicoli in pietra (横丁), geisha nascosta, bistrot francesi accanto a templi · la più bella fusione culturale di Tokyo', coords: [35.7016, 139.7434] },
+          { time: '11:30', text: 'Canal Café — terrazza sul fossato, pedalò sul canale', tags: ['café'], note: 'Sul fossato di Edogawa · barchette a pedali (¥800/30 min) · ottimo brunch · prenotare il tavolo sul pontile', coords: [35.7015, 139.7429] },
+          { time: '13:00', text: 'Pranzo al Canal Café o in un bistrot di Kagurazaka', tags: ['pranzo'] },
+          { time: '14:30', text: 'Jimbocho — quartiere dei libri usati e ukiyo-e', tags: ['cultura'], note: 'Stampe originali, mappe antiche del Giappone, libri illustrati · atmosfera unica · 15 min a piedi da Kagurazaka', coords: [35.6967, 139.7578] },
+          { time: '16:30', text: 'Nakano Broadway — manga, figure, cultura otaku', tags: ['shopping'], note: 'Più autentico e meno caro di Akihabara · Chuo Line da Jimbocho, 10 min', coords: [35.7087, 139.6654] },
+          { time: '18:30', text: 'Rientro Asakusa · ultima cena speciale — wagyu yakiniku', tags: ['cena'], note: 'L\'ultima grande cena del viaggio · prenotare il giorno prima' },
+        ],
+      },
+      {
+        badge: 'dep', title: 'Ven 5 giu — Mattino + Volo 16:20 HND', weather: '🛫 16:20 Haneda', date: '2026-06-05', city: 'tokyo',
+        alert: { type: 'warn', text: '⚠️ Partire dall\'hotel entro le 12:30 max · Keikyu da Asakusa ~40 min · check-in 3h prima = entro le 13:20' },
+        rows: [
+          { time: '07:00', text: 'Ultima passeggiata a Senso-ji all\'alba', note: 'Il commiato più bello possibile — 5 min dall\'hotel, incenso, silenzio', coords: [35.7148, 139.7967] },
+          { time: '08:30', text: 'Hamarikyu — giardino storico + tè matcha sul laghetto', tags: ['parco'], note: '20 min da Asakusa · contrasto pini/grattacieli · ultima pausa verde del viaggio', coords: [35.6605, 139.7634] },
+          { time: '10:30', text: 'Rientro hotel · check-out · bagagli' },
+          { time: '12:00', text: 'Pranzo veloce in conbini o Tsukiji esterno', tags: ['pranzo'] },
+          { time: '12:30', text: 'Keikyu Line Asakusa → Haneda Airport Terminal 3', note: '~40 min · cambio a Sengakuji', coords: [35.5494, 139.7798] },
+          { time: '13:20', text: 'Check-in + security + duty free HND', note: 'Haneda è efficiente ma il duty free vale 45 min' },
+          { time: '16:20', text: '✈️ Decollo da Haneda' },
+        ],
+      },
+    ],
+  },
+];
+
+export const tagColors: Record<string, TagStyle> = {
+  cultura:      { bg: '#E6F1FB', color: '#185FA5' },
+  parco:        { bg: '#EAF3DE', color: '#3B6D11' },
+  passeggiata:  { bg: '#EAF3DE', color: '#3B6D11' },
+  pranzo:       { bg: '#FAEEDA', color: '#633806' },
+  cena:         { bg: '#FAEEDA', color: '#633806' },
+  'street food': { bg: '#FAEEDA', color: '#633806' },
+  matcha:       { bg: '#FAEEDA', color: '#633806' },
+  colazione:    { bg: '#FAEEDA', color: '#633806' },
+  café:         { bg: '#FAEEDA', color: '#633806' },
+  shopping:     { bg: '#FBEAF0', color: '#993556' },
+  vista:        { bg: '#E6F1FB', color: '#185FA5' },
+};
+
+export const badgeStyles: Record<string, BadgeStyle> = {
+  osaka:  { bg: '#EEEDFE', color: '#3C3489', label: 'Osaka' },
+  kyoto:  { bg: '#FDE8F0', color: '#8C1A42', label: 'Kyoto' },
+  tokyo:  { bg: '#E1F5EE', color: '#085041', label: 'Tokyo' },
+  travel: { bg: '#FAEEDA', color: '#633806', label: 'Trasferimento' },
+  dep:    { bg: '#FCEBEB', color: '#A32D2D', label: 'Partenza' },
+};

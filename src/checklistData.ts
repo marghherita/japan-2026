@@ -1,0 +1,88 @@
+import type { ChecklistCategoryData } from './types';
+
+export const checklistCategories: ChecklistCategoryData[] = [
+  {
+    id: 'documenti',
+    label: 'Documenti',
+    icon: '📄',
+    defaultItems: [
+      { id: 'doc-0', text: 'Passaporto (valido)', checked: false },
+      { id: 'doc-1', text: 'Assicurazione viaggio stampata / PDF', checked: false },
+      { id: 'doc-2', text: 'Prenotazioni voli (andata e ritorno)', checked: false },
+      { id: 'doc-3', text: 'Prenotazioni hotel per ogni notte', checked: false },
+      { id: 'doc-4', text: 'JR Pass (voucher da scambiare all\'arrivo)', checked: false },
+    ],
+  },
+  {
+    id: 'trasporti',
+    label: 'Trasporti & Connettività',
+    icon: '🚄',
+    defaultItems: [
+      { id: 'tr-0', text: 'JR Pass attivato', checked: false },
+      { id: 'tr-1', text: 'Pocket WiFi / SIM dati prenotata', checked: false },
+      { id: 'tr-2', text: 'IC Card (Suica / ICOCA) caricata', checked: false },
+      { id: 'tr-3', text: 'Google Maps — mappe offline scaricate', checked: false },
+      { id: 'tr-4', text: 'App Hyperdia o Google Maps per treni', checked: false },
+    ],
+  },
+  {
+    id: 'elettronica',
+    label: 'Elettronica',
+    icon: '🔌',
+    defaultItems: [
+      { id: 'el-0', text: 'Adattatore prese Type A (standard JP)', checked: false },
+      { id: 'el-1', text: 'Smartphone + caricatore', checked: false },
+      { id: 'el-2', text: 'Power bank', checked: false },
+      { id: 'el-3', text: 'Fotocamera + schede memoria', checked: false },
+      { id: 'el-4', text: 'Cuffie / auricolari', checked: false },
+    ],
+  },
+  {
+    id: 'vestiti',
+    label: 'Vestiti',
+    icon: '👕',
+    defaultItems: [
+      { id: 've-0', text: 'T-shirt leggere (x7)', checked: false },
+      { id: 've-1', text: 'Pantaloni / gonna (per templi e santuari)', checked: false },
+      { id: 've-2', text: 'Scarpe comode — si cammina molto!', checked: false },
+      { id: 've-3', text: 'Giacca leggera o impermeabile', checked: false },
+      { id: 've-4', text: 'Ombrello compatto', checked: false },
+      { id: 've-5', text: 'Calzini (tanti — si tolgono le scarpe!)', checked: false },
+    ],
+  },
+  {
+    id: 'salute',
+    label: 'Salute & Igiene',
+    icon: '💊',
+    defaultItems: [
+      { id: 'sa-0', text: 'Farmaci personali (scorta sufficiente)', checked: false },
+      { id: 'sa-1', text: 'Antidolorifico (ibuprofene / paracetamolo)', checked: false },
+      { id: 'sa-2', text: 'Antidiarroico / probiotici', checked: false },
+      { id: 'sa-3', text: 'Cerotti e antisettico', checked: false },
+      { id: 'sa-4', text: 'Crema solare SPF 50+', checked: false },
+      { id: 'sa-5', text: 'Spazzolino + dentifricio', checked: false },
+    ],
+  },
+  {
+    id: 'soldi',
+    label: 'Soldi',
+    icon: '💴',
+    defaultItems: [
+      { id: 'so-0', text: 'Yen in contanti (il Giappone è molto cash)', checked: false },
+      { id: 'so-1', text: 'Carta di credito / debito internazionale', checked: false },
+      { id: 'so-2', text: 'Notifica alla banca per uso estero', checked: false },
+    ],
+  },
+  {
+    id: 'varie',
+    label: 'Varie',
+    icon: '🎒',
+    defaultItems: [
+      { id: 'va-0', text: 'Zaino da viaggio / valigia', checked: false },
+      { id: 'va-1', text: 'Piccolo zaino per le uscite giornaliere', checked: false },
+      { id: 'va-2', text: 'Bottiglia d\'acqua ricaricabile', checked: false },
+      { id: 'va-3', text: 'Sacchetti zip / organizer bagaglio', checked: false },
+      { id: 'va-4', text: 'Snack per il volo', checked: false },
+    ],
+  },
+];
