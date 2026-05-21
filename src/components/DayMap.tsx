@@ -1,34 +1,51 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import type { LatLngTuple } from 'leaflet';
+import { useEffect, useRef } from 'react';
+import { Map, AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import type { MapPoint } from '../types';
 
-function makeMarkerIcon(n: number, color: string) {
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-family:sans-serif">${n}</div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -13],
-  });
-}
+const MAP_ID = (import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string | undefined) || 'DEMO_MAP_ID';
 
-function MapFitter({ positions }: { positions: LatLngTuple[] }) {
+type LatLng = google.maps.LatLngLiteral;
+
+function PolylineDraw({ path, color }: { path: LatLng[]; color: string }) {
   const map = useMap();
+  const mapsLib = useMapsLibrary('maps');
+  const lineRef = useRef<google.maps.Polyline | null>(null);
+  const pathKey = path.map((p) => `${p.lat},${p.lng}`).join('|');
+
   useEffect(() => {
-    if (positions.length > 1) map.fitBounds(positions, { padding: [28, 28] });
-    else map.setView(positions[0], 15);
-  }, [map]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!map || !mapsLib) return;
+    lineRef.current?.setMap(null);
+    if (path.length < 2) return;
+    lineRef.current = new mapsLib.Polyline({
+      path,
+      strokeColor: color,
+      strokeWeight: 2.5,
+      strokeOpacity: 0.75,
+      map,
+    });
+    return () => { lineRef.current?.setMap(null); };
+  }, [map, mapsLib, color, pathKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return null;
 }
 
-function MapDragGuard({ enabled }: { enabled: boolean }) {
+function BoundsFitter({ path }: { path: LatLng[] }) {
   const map = useMap();
+  const coreLib = useMapsLibrary('core');
+  const pathKey = path.map((p) => `${p.lat},${p.lng}`).join('|');
+
   useEffect(() => {
-    if (enabled) { map.dragging.enable(); map.touchZoom.enable(); }
-    else         { map.dragging.disable(); map.touchZoom.disable(); }
-  }, [map, enabled]);
+    if (!map || !coreLib || path.length === 0) return;
+    if (path.length === 1) {
+      map.setCenter(path[0]);
+      map.setZoom(15);
+    } else {
+      const bounds = new coreLib.LatLngBounds();
+      path.forEach((p) => bounds.extend(p));
+      map.fitBounds(bounds, 40);
+    }
+  }, [map, coreLib, pathKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return null;
 }
 
@@ -38,39 +55,35 @@ interface Props {
 }
 
 export function DayMap({ points, color }: Props) {
-  const positions = points.map((p) => p.coords as LatLngTuple);
-  const isPointer = window.matchMedia('(hover: hover)').matches;
-  const [enabled, setEnabled] = useState(isPointer);
+  const path: LatLng[] = points.map((p) => ({ lat: p.coords[0], lng: p.coords[1] }));
 
   return (
     <div className="day-map">
-      <MapContainer
-        center={positions[0]}
-        zoom={13}
-        zoomControl={false}
-        attributionControl={false}
-        style={{ height: '210px', width: '100%' }}
+      <Map
+        style={{ height: 210, width: '100%' }}
+        defaultCenter={path[0]}
+        defaultZoom={13}
+        mapId={MAP_ID}
+        gestureHandling="cooperative"
+        disableDefaultUI
+        zoomControl
       >
-        <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}" />
-        <MapFitter positions={positions} />
-        <MapDragGuard enabled={enabled} />
-        {positions.length > 1 && (
-          <Polyline
-            positions={positions}
-            pathOptions={{ color, weight: 2.5, opacity: 0.75 }}
-          />
-        )}
+        <BoundsFitter path={path} />
+        {path.length > 1 && <PolylineDraw path={path} color={color} />}
         {points.map((p, i) => (
-          <Marker key={i} position={p.coords as LatLngTuple} icon={makeMarkerIcon(i + 1, color)}>
-            <Popup>{p.label}</Popup>
-          </Marker>
+          <AdvancedMarker key={i} position={path[i]} title={p.label}>
+            <div style={{
+              width: 22, height: 22, borderRadius: '50%',
+              background: color, color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, fontWeight: 700,
+              border: '2px solid #fff',
+              boxShadow: '0 1px 4px rgba(0,0,0,.35)',
+              fontFamily: 'sans-serif',
+            }}>{i + 1}</div>
+          </AdvancedMarker>
         ))}
-      </MapContainer>
-      {!enabled && (
-        <div className="map-overlay" onClick={() => setEnabled(true)}>
-          <span className="map-overlay-hint">Tocca per navigare</span>
-        </div>
-      )}
+      </Map>
     </div>
   );
 }

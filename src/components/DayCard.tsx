@@ -14,6 +14,7 @@ import { AlertBanner } from './AlertBanner';
 import { ActivityModal } from './modals/ActivityModal';
 import { AlertEditModal } from './modals/AlertEditModal';
 import { DaySwapModal } from './modals/DaySwapModal';
+import { parseMapsCoords } from '../utils/coords';
 import type {
   Row, DayData, DayInfo, AlertData, WeatherDataMap, HourlySlot, WeatherDay,
   EditVals, TitleOverridesData,
@@ -176,8 +177,10 @@ export function DayCard({
   };
 
   const mapPoints = rows
-    .filter((r) => r.coords)
-    .map((r) => ({ label: r.text, coords: r.coords! }));
+    .flatMap((r) => {
+      const coords = r.coords ?? (r.url ? parseMapsCoords(r.url) ?? undefined : undefined);
+      return coords ? [{ label: r.text, coords }] : [];
+    });
 
   return (
     <>
