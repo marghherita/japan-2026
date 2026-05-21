@@ -77,7 +77,14 @@ export function DayMap({ points, color }: Props) {
 
       // Numbered circle markers
       points.forEach((p, i) => {
-        const el = document.createElement('div');
+        const [lng, lat] = coords[i];
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=transit`;
+
+        const el = document.createElement('a');
+        el.href = mapsUrl;
+        el.target = '_blank';
+        el.rel = 'noopener noreferrer';
+        el.title = `Naviga verso: ${p.label}`;
         el.style.cssText = [
           'width:22px', 'height:22px', 'border-radius:50%',
           `background:${color}`, 'color:#fff',
@@ -86,12 +93,12 @@ export function DayMap({ points, color }: Props) {
           'border:2px solid #fff',
           'box-shadow:0 1px 4px rgba(0,0,0,.35)',
           'font-family:sans-serif', 'cursor:pointer',
+          'text-decoration:none',
         ].join(';');
         el.textContent = String(i + 1);
 
         new maplibregl.Marker({ element: el })
           .setLngLat(coords[i])
-          .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false }).setText(p.label))
           .addTo(map);
       });
     });
