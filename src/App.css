@@ -789,14 +789,6 @@ body {
   pointer-events: none;
 }
 
-.day-map .leaflet-popup-content-wrapper {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-size: 12px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
-}
-
-.day-map .leaflet-popup-content { margin: 6px 10px; line-height: 1.4; }
 
 .weather-live { color: #22C55E; font-weight: 500; }
 .weather-live::before {

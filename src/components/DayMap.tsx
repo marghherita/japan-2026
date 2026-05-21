@@ -1,33 +1,9 @@
-import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef, useMemo } from 'react';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import type { MapPoint } from '../types';
 
-type LatLng = [number, number];
-
-function makeIcon(index: number, color: string) {
-  return L.divIcon({
-    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-family:sans-serif">${index + 1}</div>`,
-    className: '',
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-    popupAnchor: [0, -13],
-  });
-}
-
-function BoundsFitter({ positions, posKey }: { positions: LatLng[]; posKey: string }) {
-  const map = useMap();
-  useEffect(() => {
-    if (positions.length === 0) return;
-    if (positions.length === 1) {
-      map.setView(positions[0], 15);
-    } else {
-      map.fitBounds(L.latLngBounds(positions), { padding: [40, 40] });
-    }
-  }, [map, posKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  return null;
-}
+const KEY = import.meta.env.VITE_MAPTILER_KEY as string;
 
 interface Props {
   points: MapPoint[];
@@ -35,38 +11,93 @@ interface Props {
 }
 
 export function DayMap({ points, color }: Props) {
-  const positions = useMemo<LatLng[]>(
-    () => points.map((p) => [p.coords[0], p.coords[1]]),
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const coords = useMemo(
+    () => points.map((p) => [p.coords[1], p.coords[0]] as [number, number]),
     [points],
   );
-  const posKey = positions.map((p) => p.join(',')).join('|');
+  const pointsKey = coords.map((c) => c.join(',')).join('|');
 
-  return (
-    <div className="day-map">
-      <MapContainer
-        center={positions[0] ?? [34.69, 135.5]}
-        zoom={13}
-        style={{ height: 210, width: '100%' }}
-        scrollWheelZoom={false}
-        zoomControl
-      >
-        <TileLayer
-          url={`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAPTILER_KEY}`}
-          attribution='&copy; <a href="https://www.maptiler.com/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-          maxZoom={20}
-          tileSize={512}
-          zoomOffset={-1}
-        />
-        <BoundsFitter positions={positions} posKey={posKey} />
-        {positions.length > 1 && (
-          <Polyline positions={positions} color={color} weight={2.5} opacity={0.75} />
-        )}
-        {points.map((p, i) => (
-          <Marker key={i} position={positions[i]} icon={makeIcon(i, color)}>
-            <Popup>{p.label}</Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  );
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: containerRef.current,
+      style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${KEY}`,
+      center: coords[0] ?? [135.5, 34.69],
+      zoom: 13,
+      attributionControl: false,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    map.on('style.load', () => {
+      // Force English labels on every symbol layer
+      map.getStyle().layers.forEach((layer) => {
+        if (layer.type === 'symbol') {
+          try {
+            map.setLayoutProperty(layer.id, 'text-field', [
+              'coalesce', ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name'],
+            ]);
+          } catch { /* some layers don't support text-field */ }
+        }
+      });
+
+      // Fit bounds
+      if (coords.length === 1) {
+        map.setCenter(coords[0]);
+        map.setZoom(15);
+      } else if (coords.length > 1) {
+        const bounds = coords.reduce(
+          (b, c) => b.extend(c as maplibregl.LngLatLike),
+          new maplibregl.LngLatBounds(coords[0], coords[0]),
+        );
+        map.fitBounds(bounds, { padding: 40, animate: false });
+      }
+
+      // Polyline
+      if (coords.length > 1) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: coords },
+            properties: {},
+          },
+        });
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          paint: { 'line-color': color, 'line-width': 2.5, 'line-opacity': 0.75 },
+        });
+      }
+
+      // Numbered circle markers
+      points.forEach((p, i) => {
+        const el = document.createElement('div');
+        el.style.cssText = [
+          'width:22px', 'height:22px', 'border-radius:50%',
+          `background:${color}`, 'color:#fff',
+          'display:flex', 'align-items:center', 'justify-content:center',
+          'font-size:11px', 'font-weight:700',
+          'border:2px solid #fff',
+          'box-shadow:0 1px 4px rgba(0,0,0,.35)',
+          'font-family:sans-serif', 'cursor:pointer',
+        ].join(';');
+        el.textContent = String(i + 1);
+
+        new maplibregl.Marker({ element: el })
+          .setLngLat(coords[i])
+          .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false }).setText(p.label))
+          .addTo(map);
+      });
+    });
+
+    return () => { map.remove(); };
+  }, [pointsKey, color]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <div className="day-map" ref={containerRef} style={{ height: 210 }} />;
 }
