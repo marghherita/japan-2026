@@ -58,6 +58,7 @@ export function Section({
                 onDayEdit={onDayEdit}
                 onSwapDay={onSwapDay}
                 isToday={dk === todayKey}
+                defaultOpen={todayKey ? dk === todayKey : true}
               />
             );
           })}

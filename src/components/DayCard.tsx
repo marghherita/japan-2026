@@ -36,14 +36,15 @@ interface Props {
   onDayEdit?: (dayKey: string, patch: { title?: string; badge?: string }) => void;
   onSwapDay?: (keyA: string, keyB: string) => void;
   isToday?: boolean;
+  defaultOpen?: boolean;
 }
 
 export function DayCard({
   day, weatherData, initialRows, onRowsChange, allDays, onMoveRow,
   alertOverride, onAlertChange, titleOverride, titleOverrides,
-  badgeOverride, onDayEdit, onSwapDay, isToday,
+  badgeOverride, onDayEdit, onSwapDay, isToday, defaultOpen = true,
 }: Props) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
   const dayKey = day.date ?? day.title;
   const defaultRows: Row[] = day.rows.map((r, i) => ({ ...r, _id: `${dayKey}-${i}` }));
 
