@@ -768,32 +768,6 @@ body {
   position: relative;
 }
 
-.map-transit-btn {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  z-index: 10;
-  background: rgba(255,255,255,0.92);
-  border: .5px solid rgba(0,0,0,0.12);
-  border-radius: 6px;
-  padding: 4px 9px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #1a73e8;
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  transition: background 0.12s, opacity 0.12s;
-}
-.map-transit-btn:hover { background: #fff; opacity: 0.95; }
-.dark .map-transit-btn {
-  background: rgba(30,30,34,0.88);
-  border-color: rgba(255,255,255,0.1);
-  color: #60a5fa;
-}
-
 .map-overlay {
   position: absolute;
   inset: 0;
