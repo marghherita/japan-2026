@@ -1220,18 +1220,18 @@ body {
 
 /* ── DARK THEME ─────────────────────────────────────────────────────────── */
 .dark {
-  --bg: #141210;
-  --bg-card: #1c1a17;
-  --border: #2c2a26;
-  --border-light: #221f1c;
-  --text-primary: #ede9e3;
-  --text-secondary: #8c8680;
-  --text-tertiary: #524e49;
+  --bg: #111113;
+  --bg-card: #1a1a1d;
+  --border: #2d2d31;
+  --border-light: #222226;
+  --text-primary: #ededef;
+  --text-secondary: #8c8c96;
+  --text-tertiary: #525258;
 }
 
 .dark body { background: var(--bg); color: var(--text-primary); }
 
-.dark .hourly-strip { background: #181614; }
+.dark .hourly-strip { background: #18181b; }
 
 .dark .row-done { background: #0d1f14; }
 .dark .row-done .time { color: #4a7a56; }
@@ -1247,7 +1247,7 @@ body {
 .dark .alert-type-btn-info.active { background: #0a1628; border-color: #3b82f6; color: #93c5fd; }
 .dark .alert-type-btn-ok.active   { background: #071a0f; border-color: #22c55e; color: #86efac; }
 
-.dark .modal-btn-save { background: #e8e4de; color: #1a1814; }
+.dark .modal-btn-save { background: #e8e8ed; color: #111113; }
 .dark .modal-btn-remove { background: #3b1010; color: #f87171; }
 
 .dark .jolly-insert-btn { border-color: #6d28d9; color: #a78bfa; }
@@ -1262,18 +1262,18 @@ body {
 .dark .row-done .row-title-link { text-decoration-color: rgba(255,255,255,0.1); }
 
 @media (hover: hover) {
-  .dark .day-head:hover { background: #222018; }
-  .dark .cl-head:hover { background: #222018; }
-  .dark .jolly-day-item:hover { background: #222018; }
-  .dark .cl-cat-head:hover { background: #222018; }
-  .dark .cl-item:hover { background: #222018; }
-  .dark .add-row-btn:hover { background: #222018; border-color: var(--text-tertiary); color: var(--text-secondary); }
-  .dark .row-menu-dropdown button:hover { background: #222018; }
+  .dark .day-head:hover { background: #222227; }
+  .dark .cl-head:hover { background: #222227; }
+  .dark .jolly-day-item:hover { background: #222227; }
+  .dark .cl-cat-head:hover { background: #222227; }
+  .dark .cl-item:hover { background: #222227; }
+  .dark .add-row-btn:hover { background: #222227; border-color: var(--text-tertiary); color: var(--text-secondary); }
+  .dark .row-menu-dropdown button:hover { background: #222227; }
   .dark .jolly-insert-btn:hover { background: #1e1030; }
-  .dark .hourly-slot:hover { background: #222018; }
+  .dark .hourly-slot:hover { background: #222227; }
 }
 
-.dark .hourly-strip { background: #161411; }
+.dark .hourly-strip { background: #161619; }
 .dark .row-done { background: #0d1f14; }
 .dark .day-done-track { background: var(--border-light); }
 .dark .day-done-fill { opacity: 0.5; }
