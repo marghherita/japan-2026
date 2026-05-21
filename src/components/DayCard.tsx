@@ -75,9 +75,8 @@ export function DayCard({
   const badge = badgeStyles[effectiveBadgeKey] ?? badgeStyles[day.badge];
 
   const titleParts = day.title.split(' — ');
-  const displayTitle = titleOverride !== undefined
-    ? (titleOverride ? `${titleParts[0]} — ${titleOverride}` : titleParts[0])
-    : day.title;
+  const datePrefix = titleParts[0];
+  const effectiveSubtitle = titleOverride !== undefined ? titleOverride : (titleParts[1] ?? '');
 
   const effectiveAlert: AlertData | null = alertOverride !== undefined
     ? (alertOverride.text ? alertOverride : null)
@@ -241,7 +240,14 @@ export function DayCard({
           {badge.label}
         </span>
         {isToday && <span className="today-pill">oggi</span>}
-        <span className="day-title">{displayTitle}</span>
+        <span className="day-title">
+          <span
+            className="day-title-date"
+            onClick={(e) => { e.stopPropagation(); setDaySwapOpen(true); }}
+            title="Scambia giornata"
+          >{datePrefix}</span>
+          {effectiveSubtitle && <> — {effectiveSubtitle}</>}
+        </span>
         {(() => {
           const done = rows.filter((r) => r.done).length;
           const total = rows.length;
@@ -312,7 +318,6 @@ export function DayCard({
           <button className="add-row-btn" onClick={addRow}>
             <span className="add-row-icon">＋</span> aggiungi attività
           </button>
-          <button className="day-swap-btn" onClick={() => setDaySwapOpen(true)}>⇄ scambia giornata</button>
         </div>
       )}
     </div>
