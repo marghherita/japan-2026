@@ -5,7 +5,8 @@
       "Bash(npm install *)",
       "Bash(npx vite *)",
       "Bash(Remove-Item \"src\\\\App.jsx\", \"src\\\\main.jsx\", \"src\\\\firebase.js\", \"src\\\\data.js\", \"src\\\\checklistData.js\", \"src\\\\weather.js\", \"vite.config.js\" -ErrorAction SilentlyContinue)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npx shadcn@latest init --preset b1VlIttI --template vite --pointer)"
     ]
   }
 }
