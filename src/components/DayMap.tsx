@@ -99,5 +99,24 @@ export function DayMap({ points, color }: Props) {
     return () => { map.remove(); };
   }, [pointsKey, color]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div className="day-map" ref={containerRef} style={{ height: 210 }} />;
+  const transitUrl = useMemo(() => {
+    const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+    const lng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+    return `https://www.google.com/maps/@${lat},${lng},14z/data=!5m1!1e3`;
+  }, [coords]);
+
+  return (
+    <div className="day-map" style={{ position: 'relative' }}>
+      <div ref={containerRef} style={{ height: 210 }} />
+      <a
+        href={transitUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="map-transit-btn"
+        title="Apri trasporti pubblici in Google Maps"
+      >
+        🚇 transit
+      </a>
+    </div>
+  );
 }
