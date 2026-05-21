@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { APIProvider } from '@vis.gl/react-google-maps';
 import { sections, badgeStyles } from './data';
 import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
@@ -200,12 +199,10 @@ export default function App() {
     ? `Live · ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
     : 'Caricamento meteo…';
 
-  const mapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
   const duringTrip = now >= DEPART && now < TRIP_END;
 
   return (
-    <APIProvider apiKey={mapsApiKey}>
-      <div className="page">
+    <div className="page">
         <header className="header">
           <div>
             <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
@@ -272,6 +269,5 @@ export default function App() {
           </span>
         </footer>
       </div>
-    </APIProvider>
   );
 }

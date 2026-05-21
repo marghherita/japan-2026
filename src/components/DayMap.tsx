@@ -1,51 +1,31 @@
-import { useEffect, useRef } from 'react';
-import { Map, AdvancedMarker, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { MapPoint } from '../types';
 
-const MAP_ID = (import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string | undefined) || 'DEMO_MAP_ID';
+type LatLng = [number, number];
 
-type LatLng = google.maps.LatLngLiteral;
-
-function PolylineDraw({ path, color }: { path: LatLng[]; color: string }) {
-  const map = useMap();
-  const mapsLib = useMapsLibrary('maps');
-  const lineRef = useRef<google.maps.Polyline | null>(null);
-  const pathKey = path.map((p) => `${p.lat},${p.lng}`).join('|');
-
-  useEffect(() => {
-    if (!map || !mapsLib) return;
-    lineRef.current?.setMap(null);
-    if (path.length < 2) return;
-    lineRef.current = new mapsLib.Polyline({
-      path,
-      strokeColor: color,
-      strokeWeight: 2.5,
-      strokeOpacity: 0.75,
-      map,
-    });
-    return () => { lineRef.current?.setMap(null); };
-  }, [map, mapsLib, color, pathKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return null;
+function makeIcon(index: number, color: string) {
+  return L.divIcon({
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-family:sans-serif">${index + 1}</div>`,
+    className: '',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -13],
+  });
 }
 
-function BoundsFitter({ path }: { path: LatLng[] }) {
+function BoundsFitter({ positions, posKey }: { positions: LatLng[]; posKey: string }) {
   const map = useMap();
-  const coreLib = useMapsLibrary('core');
-  const pathKey = path.map((p) => `${p.lat},${p.lng}`).join('|');
-
   useEffect(() => {
-    if (!map || !coreLib || path.length === 0) return;
-    if (path.length === 1) {
-      map.setCenter(path[0]);
-      map.setZoom(15);
+    if (positions.length === 0) return;
+    if (positions.length === 1) {
+      map.setView(positions[0], 15);
     } else {
-      const bounds = new coreLib.LatLngBounds();
-      path.forEach((p) => bounds.extend(p));
-      map.fitBounds(bounds, 40);
+      map.fitBounds(L.latLngBounds(positions), { padding: [40, 40] });
     }
-  }, [map, coreLib, pathKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, [map, posKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
@@ -55,35 +35,38 @@ interface Props {
 }
 
 export function DayMap({ points, color }: Props) {
-  const path: LatLng[] = points.map((p) => ({ lat: p.coords[0], lng: p.coords[1] }));
+  const positions = useMemo<LatLng[]>(
+    () => points.map((p) => [p.coords[0], p.coords[1]]),
+    [points],
+  );
+  const posKey = positions.map((p) => p.join(',')).join('|');
 
   return (
     <div className="day-map">
-      <Map
+      <MapContainer
+        center={positions[0] ?? [34.69, 135.5]}
+        zoom={13}
         style={{ height: 210, width: '100%' }}
-        defaultCenter={path[0]}
-        defaultZoom={13}
-        mapId={MAP_ID}
-        gestureHandling="cooperative"
-        disableDefaultUI
+        scrollWheelZoom={false}
         zoomControl
       >
-        <BoundsFitter path={path} />
-        {path.length > 1 && <PolylineDraw path={path} color={color} />}
+        <TileLayer
+          url={`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${import.meta.env.VITE_MAPTILER_KEY}`}
+          attribution='&copy; <a href="https://www.maptiler.com/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+          maxZoom={20}
+          tileSize={512}
+          zoomOffset={-1}
+        />
+        <BoundsFitter positions={positions} posKey={posKey} />
+        {positions.length > 1 && (
+          <Polyline positions={positions} color={color} weight={2.5} opacity={0.75} />
+        )}
         {points.map((p, i) => (
-          <AdvancedMarker key={i} position={path[i]} title={p.label}>
-            <div style={{
-              width: 22, height: 22, borderRadius: '50%',
-              background: color, color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700,
-              border: '2px solid #fff',
-              boxShadow: '0 1px 4px rgba(0,0,0,.35)',
-              fontFamily: 'sans-serif',
-            }}>{i + 1}</div>
-          </AdvancedMarker>
+          <Marker key={i} position={positions[i]} icon={makeIcon(i, color)}>
+            <Popup>{p.label}</Popup>
+          </Marker>
         ))}
-      </Map>
+      </MapContainer>
     </div>
   );
 }

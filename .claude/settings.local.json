@@ -8,7 +8,9 @@
       "Bash(npx tsc *)",
       "Bash(npx shadcn@latest init --preset b1VlIttI --template vite --pointer)",
       "Bash(findstr google *)",
-      "Bash(del src\\\\hooks\\\\useTravelTimes.ts)"
+      "Bash(del src\\\\hooks\\\\useTravelTimes.ts)",
+      "Bash(npm uninstall *)",
+      "Bash(npm list *)"
     ]
   }
 }
