@@ -7,7 +7,8 @@
       "Bash(Remove-Item \"src\\\\App.jsx\", \"src\\\\main.jsx\", \"src\\\\firebase.js\", \"src\\\\data.js\", \"src\\\\checklistData.js\", \"src\\\\weather.js\", \"vite.config.js\" -ErrorAction SilentlyContinue)",
       "Bash(npx tsc *)",
       "Bash(npx shadcn@latest init --preset b1VlIttI --template vite --pointer)",
-      "Bash(findstr google *)"
+      "Bash(findstr google *)",
+      "Bash(del src\\\\hooks\\\\useTravelTimes.ts)"
     ]
   }
 }

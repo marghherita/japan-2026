@@ -6,6 +6,7 @@ import type {
   AlertsData,
   TitleOverridesData,
   JolliesData,
+  BadgeOverridesData,
 } from './types';
 
 const app = initializeApp({
@@ -18,7 +19,7 @@ const app = initializeApp({
   appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 });
 
-const db = getDatabase(app);
+export const db = getDatabase(app);
 
 const load = <T>(path: string): Promise<T> =>
   get(ref(db, path)).then((snap) => (snap.val() as T) ?? ({} as T));
@@ -43,3 +44,6 @@ export const saveJollies        = (d: JolliesData)        => save('jollies', d);
 
 export const loadJollyApplications = (): Promise<Record<string, unknown>> => load('jollyApplications');
 export const saveJollyApplications = (d: Record<string, unknown>) => save('jollyApplications', d);
+
+export const loadBadgeOverrides  = (): Promise<BadgeOverridesData>  => load('badgeOverrides');
+export const saveBadgeOverrides  = (d: BadgeOverridesData)  => save('badgeOverrides', d);

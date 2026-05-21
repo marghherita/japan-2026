@@ -1,39 +1,37 @@
 import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
-
-const TIMEOUT_MS = 8000;
+import { ref, onValue, set } from 'firebase/database';
+import { db } from '../firebase';
 
 /**
- * Loads data from Firebase on mount and saves it whenever it changes.
- * Returns null while the initial load is in flight.
+ * Real-time Firebase sync. Subscribes to onValue for live updates from other
+ * devices and writes back on every local state change.
+ * Returns null while the initial snapshot is in flight.
  */
 export function useFirebaseSync<T extends object>(
-  loader: () => Promise<T>,
-  saver: (data: T) => Promise<void>,
+  path: string,
 ): [T | null, Dispatch<SetStateAction<T | null>>] {
   const [data, setData] = useState<T | null>(null);
-  const hasLoaded = useRef(false);
-  const loaderRef = useRef(loader);
-  const saverRef = useRef(saver);
+  // True when the last setData call came from Firebase, not from user action.
+  // Prevents re-saving received data back to Firebase.
+  const isRemote = useRef(false);
 
   useEffect(() => {
-    Promise.race([
-      loaderRef.current(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), TIMEOUT_MS),
-      ),
-    ])
-      .then((d) => setData(d ?? ({} as T)))
-      .catch(() => setData({} as T));
-  }, []); // intentionally empty — runs once on mount
+    const unsub = onValue(
+      ref(db, path),
+      (snap) => {
+        isRemote.current = true;
+        setData((snap.val() as T) ?? ({} as T));
+      },
+      () => setData({} as T), // on error fall back to empty
+    );
+    return unsub;
+  }, [path]);
 
   useEffect(() => {
     if (data === null) return;
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      return;
-    }
-    saverRef.current(data).catch(console.error);
-  }, [data]);
+    if (isRemote.current) { isRemote.current = false; return; }
+    set(ref(db, path), JSON.parse(JSON.stringify(data))).catch(console.error);
+  }, [data, path]);
 
   return [data, setData];
 }

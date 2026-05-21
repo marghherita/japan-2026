@@ -1,7 +1,7 @@
 import { DayCard } from './DayCard';
 import type {
   SectionData, WeatherDataMap, Row, DayInfo,
-  AlertData, TitleOverridesData, ItineraryData, AlertsData,
+  AlertData, TitleOverridesData, BadgeOverridesData, ItineraryData, AlertsData,
 } from '../types';
 
 interface Props {
@@ -17,13 +17,16 @@ interface Props {
   alerts: AlertsData | null;
   onAlertChange: (dayKey: string, val: AlertData) => void;
   titleOverrides: TitleOverridesData | null;
+  badgeOverrides: BadgeOverridesData | null;
+  onDayEdit: (dayKey: string, patch: { title?: string; badge?: string }) => void;
   onSwapDay: (keyA: string, keyB: string) => void;
+  todayKey: string | null;
 }
 
 export function Section({
   section, activeSection, onToggle, weatherData, itinerary,
   onRowsChange, allDays, onMoveRow, cardVersions, alerts,
-  onAlertChange, titleOverrides, onSwapDay,
+  onAlertChange, titleOverrides, badgeOverrides, onDayEdit, onSwapDay, todayKey,
 }: Props) {
   const isOpen = activeSection === section.id;
 
@@ -51,7 +54,10 @@ export function Section({
                 onAlertChange={onAlertChange}
                 titleOverride={titleOverrides?.[dk]}
                 titleOverrides={titleOverrides}
+                badgeOverride={badgeOverrides?.[dk]}
+                onDayEdit={onDayEdit}
                 onSwapDay={onSwapDay}
+                isToday={dk === todayKey}
               />
             );
           })}

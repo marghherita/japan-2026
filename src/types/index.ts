@@ -126,4 +126,5 @@ export type ItineraryData = Record<string, Row[]>;
 export type ChecklistData = Record<string, ChecklistItem[]>;
 export type AlertsData = Record<string, AlertData>;
 export type TitleOverridesData = Record<string, string>;
+export type BadgeOverridesData = Record<string, string>;
 export type JolliesData = Record<string, JollyActivity>;

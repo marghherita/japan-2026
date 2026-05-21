@@ -14,6 +14,7 @@ import { AlertBanner } from './AlertBanner';
 import { ActivityModal } from './modals/ActivityModal';
 import { AlertEditModal } from './modals/AlertEditModal';
 import { DaySwapModal } from './modals/DaySwapModal';
+import { DayEditModal } from './modals/DayEditModal';
 import { parseMapsCoords } from '../utils/coords';
 import type {
   Row, DayData, DayInfo, AlertData, WeatherDataMap, HourlySlot, WeatherDay,
@@ -31,12 +32,16 @@ interface Props {
   onAlertChange?: (dayKey: string, val: AlertData) => void;
   titleOverride?: string;
   titleOverrides: TitleOverridesData | null;
+  badgeOverride?: string;
+  onDayEdit?: (dayKey: string, patch: { title?: string; badge?: string }) => void;
   onSwapDay?: (keyA: string, keyB: string) => void;
+  isToday?: boolean;
 }
 
 export function DayCard({
   day, weatherData, initialRows, onRowsChange, allDays, onMoveRow,
-  alertOverride, onAlertChange, titleOverride, titleOverrides, onSwapDay,
+  alertOverride, onAlertChange, titleOverride, titleOverrides,
+  badgeOverride, onDayEdit, onSwapDay, isToday,
 }: Props) {
   const [open, setOpen] = useState(true);
   const dayKey = day.date ?? day.title;
@@ -59,14 +64,16 @@ export function DayCard({
   }, [rows]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [editIdx, setEditIdx] = useState<number | null>(null);
-  const [editVals, setEditVals] = useState<EditVals>({
-    time: '', text: '', note: '', tags: [], url: '',
-  });
+  const [editVals, setEditVals] = useState<EditVals>({ time: '', text: '', note: '', tags: [], url: '' });
   const [isNewRow, setIsNewRow] = useState(false);
   const [alertEditOpen, setAlertEditOpen] = useState(false);
   const [daySwapOpen, setDaySwapOpen] = useState(false);
+  const [dayEditOpen, setDayEditOpen] = useState(false);
 
-  const badge = badgeStyles[day.badge];
+  // Effective badge and city (may be overridden via Firebase)
+  const effectiveBadgeKey = badgeOverride ?? day.badge;
+  const badge = badgeStyles[effectiveBadgeKey] ?? badgeStyles[day.badge];
+
   const titleParts = day.title.split(' — ');
   const displayTitle = titleOverride !== undefined
     ? (titleOverride ? `${titleParts[0]} — ${titleOverride}` : titleParts[0])
@@ -92,14 +99,14 @@ export function DayCard({
     });
   };
 
-  const hourlySlots = weatherData[`${day.date}_${day.city}_hourly`] as HourlySlot[] | undefined ?? null;
-
+  // Weather uses effective badge/city
+  const hourlySlots = weatherData[`${day.date}_${effectiveBadgeKey}_hourly`] as HourlySlot[] | undefined ?? null;
   const weather = useMemo(() => {
-    if (!day.date || !day.city) return day.weather;
-    const w = weatherData[`${day.date}_${day.city}`] as WeatherDay | undefined;
+    if (!day.date) return day.weather;
+    const w = weatherData[`${day.date}_${effectiveBadgeKey}`] as WeatherDay | undefined;
     if (!w) return day.weather;
     return `${w.icon} ${w.temp}°C · ${w.rain}%`;
-  }, [day, weatherData]);
+  }, [day, weatherData, effectiveBadgeKey]);
 
   const startEdit = (i: number) => {
     setEditIdx(i);
@@ -117,7 +124,6 @@ export function DayCard({
     if (editIdx === null) return;
     const targetDay = editVals.targetDay ?? dayKey;
     const isMove = targetDay !== dayKey;
-
     if (isMove) {
       setRows((prev) => prev.filter((_, i) => i !== editIdx));
       const src = rows[editIdx];
@@ -176,14 +182,14 @@ export function DayCard({
     setIsNewRow(true);
   };
 
-  const mapPoints = rows
-    .flatMap((r) => {
-      const coords = r.coords ?? (r.url ? parseMapsCoords(r.url) ?? undefined : undefined);
-      return coords ? [{ label: r.text, coords }] : [];
-    });
+  // Map points + travel times (feature 5)
+  const mapPoints = rows.flatMap((r) => {
+    const coords = r.coords ?? (r.url ? parseMapsCoords(r.url) ?? undefined : undefined);
+    return coords ? [{ label: r.text, coords }] : [];
+  });
 
   return (
-    <>
+    <div id={dayKey} className={`day-card${isToday ? ' day-card-today' : ''}`}>
       {editIdx !== null && (
         <ActivityModal
           isNew={isNewRow}
@@ -212,65 +218,103 @@ export function DayCard({
           onRemove={() => { onAlertChange?.(dayKey, { type: '', text: '' }); setAlertEditOpen(false); }}
         />
       )}
-      <div className="day-card">
-        <button className="day-head" onClick={() => setOpen((o) => !o)}>
-          <span className="badge" style={{ background: badge.bg, color: badge.color }}>
-            {badge.label}
-          </span>
-          <span className="day-title">{displayTitle}</span>
-          {(() => {
-            const done = rows.filter((r) => r.done).length;
-            const total = rows.length;
-            if (done === 0) return null;
-            const all = done === total;
-            return (
-              <span className="day-progress" style={{ color: all ? '#22C55E' : '#F59E0B' }}>
-                {done}/{total}
-              </span>
-            );
-          })()}
-          <span className="weather">{weather}</span>
-          <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+      {dayEditOpen && (
+        <DayEditModal
+          currentSubtitle={titleOverride ?? (titleParts[1] ?? '')}
+          currentBadge={effectiveBadgeKey}
+          onSave={(subtitle, newBadge) => {
+            onDayEdit?.(dayKey, { title: subtitle, badge: newBadge });
+            setDayEditOpen(false);
+          }}
+          onCancel={() => setDayEditOpen(false)}
+        />
+      )}
+
+      <div
+        className="day-head"
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => e.key === 'Enter' && setOpen((o) => !o)}
+      >
+        <span className="badge" style={{ background: badge.bg, color: badge.color }}>
+          {badge.label}
+        </span>
+        {isToday && <span className="today-pill">oggi</span>}
+        <span className="day-title">{displayTitle}</span>
+        {(() => {
+          const done = rows.filter((r) => r.done).length;
+          const total = rows.length;
+          if (total === 0) return null;
+          const pct = Math.round((done / total) * 100);
+          const all = done === total;
+          return (
+            <span className="day-progress" style={{ color: all ? '#22C55E' : badge.color }}>
+              {done}/{total}
+              <span className="day-progress-pct"> · {pct}%</span>
+            </span>
+          );
+        })()}
+        <span className="weather">{weather}</span>
+        <button
+          className="day-edit-btn"
+          title="Modifica giornata"
+          onClick={(e) => { e.stopPropagation(); setDayEditOpen(true); }}
+        >
+          ✎
         </button>
-
-        {open && hourlySlots && <HourlyStrip slots={hourlySlots} />}
-
-        {open && mapPoints.length > 0 && (
-          <DayMap points={mapPoints} color={badgeStyles[day.badge].color} />
-        )}
-
-        {open && (
-          <div className="day-body">
-            {effectiveAlert ? (
-              <div className="alert-wrap">
-                <AlertBanner alert={effectiveAlert} />
-                <button className="alert-edit-btn" onClick={() => setAlertEditOpen(true)} title="Modifica nota">✎</button>
-              </div>
-            ) : (
-              <button className="add-alert-btn" onClick={() => setAlertEditOpen(true)}>＋ aggiungi nota</button>
-            )}
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSortEnd}>
-              <SortableContext items={rows.map((r) => r._id)} strategy={verticalListSortingStrategy}>
-                {rows.map((row, i) => (
-                  <SortableRow
-                    key={row._id}
-                    id={row._id}
-                    row={row}
-                    idx={i}
-                    startEdit={startEdit}
-                    deleteRow={deleteRow}
-                    onToggleDone={toggleDone}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-            <button className="add-row-btn" onClick={addRow}>
-              <span className="add-row-icon">＋</span> aggiungi attività
-            </button>
-            <button className="day-swap-btn" onClick={() => setDaySwapOpen(true)}>⇄ scambia giornata</button>
-          </div>
-        )}
+        <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
       </div>
-    </>
+      {(() => {
+        const done = rows.filter((r) => r.done).length;
+        const total = rows.length;
+        if (done === 0 || total === 0) return null;
+        return (
+          <div className="day-done-track">
+            <div
+              className="day-done-fill"
+              style={{ width: `${(done / total) * 100}%`, background: badge.color }}
+            />
+          </div>
+        );
+      })()}
+
+      {open && hourlySlots && <HourlyStrip slots={hourlySlots} />}
+      {open && mapPoints.length > 0 && (
+        <DayMap points={mapPoints} color={badge.color} />
+      )}
+
+      {open && (
+        <div className="day-body">
+          {effectiveAlert ? (
+            <div className="alert-wrap">
+              <AlertBanner alert={effectiveAlert} />
+              <button className="alert-edit-btn" onClick={() => setAlertEditOpen(true)} title="Modifica nota">✎</button>
+            </div>
+          ) : (
+            <button className="add-alert-btn" onClick={() => setAlertEditOpen(true)}>＋ aggiungi nota</button>
+          )}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSortEnd}>
+            <SortableContext items={rows.map((r) => r._id)} strategy={verticalListSortingStrategy}>
+              {rows.map((row, i) => (
+                <SortableRow
+                  key={row._id}
+                  id={row._id}
+                  row={row}
+                  idx={i}
+                  startEdit={startEdit}
+                  deleteRow={deleteRow}
+                  onToggleDone={toggleDone}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+          <button className="add-row-btn" onClick={addRow}>
+            <span className="add-row-icon">＋</span> aggiungi attività
+          </button>
+          <button className="day-swap-btn" onClick={() => setDaySwapOpen(true)}>⇄ scambia giornata</button>
+        </div>
+      )}
+    </div>
   );
 }
