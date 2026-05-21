@@ -15,6 +15,7 @@ import { Checklist } from './components/Checklist';
 import { JollySection } from './components/JollySection';
 import { Section } from './components/Section';
 import { useEffect } from 'react';
+import { useDarkMode } from './hooks/useDarkMode';
 import './App.css';
 import type {
   Row, DayInfo, AlertData, ItineraryData, ChecklistData,
@@ -24,6 +25,7 @@ import type {
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [dark, setDark] = useDarkMode();
   const [activeSection, setActiveSection] = useState<string | null>('osaka');
   const [weatherData, setWeatherData] = useState<WeatherDataMap>({});
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState<Date | null>(null);
@@ -187,6 +189,9 @@ export default function App() {
             </span>
           </p>
         </div>
+        <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
+          {dark ? '☀️' : '🌙'}
+        </button>
         <div className="legend">
           {Object.entries(badgeStyles).map(([key, val]) => (
             <div className="legend-item" key={key}>
