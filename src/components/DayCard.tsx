@@ -38,12 +38,15 @@ interface Props {
   onSwapDay?: (keyA: string, keyB: string) => void;
   isToday?: boolean;
   defaultOpen?: boolean;
+  tagOverride?: string[];
+  onTagsChange?: (dayKey: string, tags: string[]) => void;
 }
 
 export function DayCard({
   day, weatherData, initialRows, onRowsChange, allDays, onMoveRow,
   alertOverride, onAlertChange, titleOverride, titleOverrides,
   badgeOverride, onDayEdit, onSwapDay, isToday, defaultOpen = true,
+  tagOverride, onTagsChange,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const dayKey = day.date ?? day.title;
@@ -223,8 +226,10 @@ export function DayCard({
         <DayEditModal
           currentSubtitle={titleOverride ?? (titleParts[1] ?? '')}
           currentBadge={effectiveBadgeKey}
-          onSave={(subtitle, newBadge) => {
+          currentTags={tagOverride ?? []}
+          onSave={(subtitle, newBadge, tags) => {
             onDayEdit?.(dayKey, { title: subtitle, badge: newBadge });
+            onTagsChange?.(dayKey, tags);
             setDayEditOpen(false);
           }}
           onCancel={() => setDayEditOpen(false)}
@@ -250,6 +255,18 @@ export function DayCard({
           >{datePrefix}</span>
           {effectiveSubtitle && <> — {effectiveSubtitle}</>}
         </span>
+        {tagOverride && tagOverride.length > 0 && (
+          <span className="day-head-tags">
+            {tagOverride.map((t) => {
+              const s = badgeStyles[t] ?? { bg: '#f3f4f6', color: '#374151', label: t };
+              return (
+                <span key={t} className="badge" style={{ background: s.bg, color: s.color }}>
+                  {s.label}
+                </span>
+              );
+            })}
+          </span>
+        )}
         {(() => {
           const done = rows.filter((r) => r.done).length;
           const total = rows.length;

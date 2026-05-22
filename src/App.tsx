@@ -18,7 +18,7 @@ import './App.css';
 import type {
   Row, DayInfo, AlertData, ItineraryData, ChecklistData,
   AlertsData, TitleOverridesData, BadgeOverridesData, JolliesData,
-  WeatherDataMap, ChecklistItem,
+  WeatherDataMap, ChecklistItem, DayTagsData,
 } from './types';
 
 const TRIP_END = new Date('2026-06-06T00:00:00');
@@ -38,6 +38,7 @@ export default function App() {
   const [titleOverrides, setTitleOverrides] = useFirebaseSync<TitleOverridesData>('titleOverrides');
   const [badgeOverrides, setBadgeOverrides] = useFirebaseSync<BadgeOverridesData>('badgeOverrides');
   const [jollies, setJollies]               = useFirebaseSync<JolliesData>('jollies');
+  const [dayTags, setDayTags]               = useFirebaseSync<DayTagsData>('dayTags');
 
   const allDays = useMemo<DayInfo[]>(
     () => sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
@@ -106,6 +107,10 @@ export default function App() {
   const handleJolliesChange = useCallback((newJollies: JolliesData) => {
     setJollies(newJollies);
   }, [setJollies]);
+
+  const handleDayTagsChange = useCallback((dayKey: string, tags: string[]) => {
+    setDayTags((prev) => prev ? { ...prev, [dayKey]: tags } : { [dayKey]: tags });
+  }, [setDayTags]);
 
   const handleDayEdit = useCallback((dayKey: string, patch: { title?: string; badge?: string }) => {
     if (patch.title !== undefined)
@@ -261,6 +266,8 @@ export default function App() {
             onDayEdit={handleDayEdit}
             onSwapDay={handleSwapDays}
             todayKey={todayKey}
+            dayTags={dayTags ?? {}}
+            onDayTagsChange={handleDayTagsChange}
           />
         ))}
       </main>

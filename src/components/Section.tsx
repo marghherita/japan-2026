@@ -2,7 +2,7 @@ import { DayCard } from './DayCard';
 import { ChevronDown } from 'lucide-react';
 import type {
   SectionData, WeatherDataMap, Row, DayInfo,
-  AlertData, TitleOverridesData, BadgeOverridesData, ItineraryData, AlertsData,
+  AlertData, TitleOverridesData, BadgeOverridesData, ItineraryData, AlertsData, DayTagsData,
 } from '../types';
 
 interface Props {
@@ -22,12 +22,15 @@ interface Props {
   onDayEdit: (dayKey: string, patch: { title?: string; badge?: string }) => void;
   onSwapDay: (keyA: string, keyB: string) => void;
   todayKey: string | null;
+  dayTags: DayTagsData;
+  onDayTagsChange: (dayKey: string, tags: string[]) => void;
 }
 
 export function Section({
   section, activeSection, onToggle, weatherData, itinerary,
   onRowsChange, allDays, onMoveRow, cardVersions, alerts,
   onAlertChange, titleOverrides, badgeOverrides, onDayEdit, onSwapDay, todayKey,
+  dayTags, onDayTagsChange,
 }: Props) {
   const isOpen = activeSection === section.id;
 
@@ -60,6 +63,8 @@ export function Section({
                 onSwapDay={onSwapDay}
                 isToday={dk === todayKey}
                 defaultOpen={todayKey ? dk === todayKey : true}
+                tagOverride={dayTags[dk]}
+                onTagsChange={onDayTagsChange}
               />
             );
           })}

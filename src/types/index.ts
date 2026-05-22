@@ -128,3 +128,4 @@ export type AlertsData = Record<string, AlertData>;
 export type TitleOverridesData = Record<string, string>;
 export type BadgeOverridesData = Record<string, string>;
 export type JolliesData = Record<string, JollyActivity>;
+export type DayTagsData = Record<string, string[]>;
