@@ -1244,7 +1244,7 @@ body {
   justify-content: center;
   gap: 2.5rem;
   background: #ff4328;
-  padding: 2rem;
+  padding: max(2rem, env(safe-area-inset-top)) 2rem max(2rem, env(safe-area-inset-bottom));
   animation: login-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   -webkit-tap-highlight-color: transparent;
 }
