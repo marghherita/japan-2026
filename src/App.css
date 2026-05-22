@@ -790,10 +790,10 @@ body {
   flex-shrink: 0;
 }
 .footer-typo {
-  height: 42px;
+  height: 52px;
   width: auto;
   user-select: none;
-  opacity: 0.55;
+  opacity: 1;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
