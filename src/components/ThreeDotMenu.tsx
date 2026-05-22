@@ -31,7 +31,7 @@ export function ThreeDotMenu({ onEdit, onDelete }: Props) {
     e.stopPropagation();
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+      setPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right) });
     }
     setOpen((o) => !o);
   };
