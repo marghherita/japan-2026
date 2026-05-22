@@ -4,6 +4,7 @@ import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useAuth } from './hooks/useAuth';
+import { logout } from './firebase';
 import { DEPART } from './components/Countdown';
 import { AppHeader } from './components/AppHeader';
 import { Checklist } from './components/Checklist';
@@ -243,6 +244,7 @@ export default function App() {
       <AppHeader
         dark={dark}
         onToggleDark={() => setDark((d) => !d)}
+        onLogout={logout}
         now={now}
         sections={Array.isArray(sections) ? sections : []}
         titleOverrides={titleOverrides ?? {}}

@@ -1,4 +1,4 @@
-import { Moon, Sun, Share } from 'lucide-react';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import logoJanap from '../assets/logo_janap.png';
 import { DEPART } from './Countdown';
 import type { SectionData, TitleOverridesData } from '../types';
@@ -11,13 +11,14 @@ const IT_DAYS    = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 interface Props {
   dark: boolean;
   onToggleDark: () => void;
+  onLogout: () => void;
   now: Date;
   sections: SectionData[];
   titleOverrides: TitleOverridesData;
   todayKey: string | null;
 }
 
-export function AppHeader({ dark, onToggleDark, now, sections, titleOverrides, todayKey }: Props) {
+export function AppHeader({ dark, onToggleDark, onLogout, now, sections, titleOverrides, todayKey }: Props) {
   const duringTrip = now >= DEPART && now < TRIP_END;
   const preTrip    = now < DEPART;
 
@@ -47,14 +48,6 @@ export function AppHeader({ dark, onToggleDark, now, sections, titleOverrides, t
     }
   }
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: 'Janap', url: window.location.href }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(window.location.href).catch(() => {});
-    }
-  };
-
   return (
     <header className="header">
       <div className="header-topbar">
@@ -65,8 +58,8 @@ export function AppHeader({ dark, onToggleDark, now, sections, titleOverrides, t
           <button className="header-btn" onClick={onToggleDark} aria-label="Tema">
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <button className="header-btn" onClick={handleShare} aria-label="Condividi">
-            <Share size={16} />
+          <button className="header-btn" onClick={onLogout} aria-label="Esci">
+            <LogOut size={16} />
           </button>
         </div>
       </div>
