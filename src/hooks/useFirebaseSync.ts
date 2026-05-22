@@ -22,7 +22,7 @@ export function useFirebaseSync<T extends object>(
         isRemote.current = true;
         setData((snap.val() as T) ?? ({} as T));
       },
-      () => setData({} as T), // on error fall back to empty
+      () => { isRemote.current = true; setData({} as T); }, // on error fall back to empty without writing back
     );
     return unsub;
   }, [path]);
