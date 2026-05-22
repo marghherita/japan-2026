@@ -431,18 +431,17 @@ body {
 
 /* Buttons: always visible at low opacity on touch; hover-only on pointer devices */
 .drag-handle {
-  font-size: 14px;
-  color: var(--text-tertiary);
-  opacity: 0.3;
+  opacity: 0;
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
-  transition: opacity 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
+  width: 8px;
+  min-width: 8px;
   min-height: 36px;
+  overflow: hidden;
 }
 
 .edit-btn {
@@ -1200,7 +1199,7 @@ body {
 /* ── DESKTOP HOVER BEHAVIORS (pointer/mouse devices only) ───────────────── */
 /* On touch devices, show action buttons at low opacity always */
 @media (hover: none) {
-  .drag-handle { opacity: 0.25; }
+  /* drag-handle always invisible */
   .edit-btn    { opacity: 0.25; }
   .delete-btn  { opacity: 0.25; }
   .cl-del-btn  { opacity: 0.25; }
@@ -1222,9 +1221,7 @@ body {
   .modal-tag:hover { border-color: var(--text-tertiary); }
   .hourly-slot:hover { background: var(--border-light); }
 
-  /* hide action buttons, reveal on row hover */
-  .drag-handle { opacity: 0; }
-  .row:hover .drag-handle { opacity: 0.45; }
+  /* drag-handle always invisible */
 
   .edit-btn { opacity: 0; }
   .row:hover .edit-btn { opacity: 0.45; }
