@@ -766,7 +766,6 @@ body {
   animation: loading-pulse 1.6s ease-in-out infinite;
 }
 
-.dark .loading-logo { filter: invert(1); }
 
 /* ── FOOTER ─────────────────────────────────────────────────────────────── */
 .footer {
@@ -804,8 +803,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
-.dark .footer-logo,
-.dark .footer-typo { filter: invert(1); }
+.dark .footer-typo { filter: brightness(0) invert(1); }
 
 /* ── MAP ────────────────────────────────────────────────────────────────── */
 .day-map {
