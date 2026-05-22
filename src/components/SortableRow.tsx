@@ -12,12 +12,13 @@ interface Props {
   id: string;
   row: Row;
   idx: number;
+  mapNum?: number | null;
   startEdit: (i: number) => void;
   deleteRow: (i: number) => void;
   onToggleDone: (i: number) => void;
 }
 
-export function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }: Props) {
+export function SortableRow({ id, row, idx, mapNum, startEdit, deleteRow, onToggleDone }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const touchStartX = useRef(0);
@@ -84,6 +85,7 @@ export function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }
         <GripVertical size={14} />
       </span>
       <span className="time">{row.time}</span>
+      {mapNum != null && <span className="row-map-num">{mapNum}</span>}
       <RowContent text={row.text} url={row.url} tags={row.tags} note={row.note} />
       <ThreeDotMenu onEdit={() => startEdit(idx)} onDelete={() => deleteRow(idx)} />
     </div>

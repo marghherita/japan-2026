@@ -186,10 +186,16 @@ export function DayCard({
     setIsNewRow(true);
   };
 
-  // Map points + travel times (feature 5)
+  // Map points + per-row map number (feature 5)
   const mapPoints = rows.flatMap((r) => {
     const coords = r.coords ?? (r.url ? parseMapsCoords(r.url) ?? undefined : undefined);
-    return coords ? [{ label: r.text, coords }] : [];
+    return coords ? [{ label: r.text, coords, done: r.done }] : [];
+  });
+
+  let _mapCounter = 0;
+  const rowMapNums = rows.map((r) => {
+    const coords = r.coords ?? (r.url ? parseMapsCoords(r.url) ?? undefined : undefined);
+    return coords ? ++_mapCounter : null;
   });
 
   return (
@@ -327,6 +333,7 @@ export function DayCard({
                   id={row._id}
                   row={row}
                   idx={i}
+                  mapNum={rowMapNums[i]}
                   startEdit={startEdit}
                   deleteRow={deleteRow}
                   onToggleDone={toggleDone}

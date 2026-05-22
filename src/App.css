@@ -399,11 +399,28 @@ body {
 
 .row:last-child { margin-bottom: 0; }
 
+.row-map-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--border);
+  color: var(--text-tertiary);
+  transition: background 0.2s, color 0.2s;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
 .row-done { background: #f0fdf4; }
 .row-done .time { color: #86b894; }
 .row-done .row-text { color: #a3c9ac; text-decoration: line-through; text-decoration-thickness: 1px; }
 .row-done .tag { opacity: 0.45; }
 .row-done .row-note { color: #a3c9ac; }
+.row-done .row-map-num { background: #22c55e; color: #fff; }
 
 .day-progress {
   font-size: 11px;

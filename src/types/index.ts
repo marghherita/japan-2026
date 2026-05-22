@@ -107,6 +107,7 @@ export type WeatherDataMap = Record<string, WeatherDay | HourlySlot[]>;
 export interface MapPoint {
   label: string;
   coords: [number, number];
+  done?: boolean;
 }
 
 // ── Edit state types ─────────────────────────────────────────────────────────

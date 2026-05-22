@@ -17,7 +17,7 @@ export function DayMap({ points, color }: Props) {
     () => points.map((p) => [p.coords[1], p.coords[0]] as [number, number]),
     [points],
   );
-  const pointsKey = coords.map((c) => c.join(',')).join('|');
+  const pointsKey = points.map((p, i) => `${coords[i].join(',')}:${p.done ? 1 : 0}`).join('|');
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -79,6 +79,7 @@ export function DayMap({ points, color }: Props) {
       points.forEach((p, i) => {
         const [lng, lat] = coords[i];
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=transit`;
+        const markerColor = p.done ? '#b0b0b0' : color;
 
         const el = document.createElement('a');
         el.href = mapsUrl;
@@ -87,14 +88,15 @@ export function DayMap({ points, color }: Props) {
         el.title = `Naviga verso: ${p.label}`;
         el.style.cssText = [
           'width:22px', 'height:22px', 'border-radius:50%',
-          `background:${color}`, 'color:#fff',
+          `background:${markerColor}`, 'color:#fff',
           'display:flex', 'align-items:center', 'justify-content:center',
           'font-size:11px', 'font-weight:700',
           'border:2px solid #fff',
           'box-shadow:0 1px 4px rgba(0,0,0,.35)',
           'font-family:sans-serif', 'cursor:pointer',
           'text-decoration:none',
-        ].join(';');
+          p.done ? 'opacity:0.6' : '',
+        ].filter(Boolean).join(';');
         el.textContent = String(i + 1);
 
         new maplibregl.Marker({ element: el })
