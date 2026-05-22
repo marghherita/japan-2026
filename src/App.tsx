@@ -3,11 +3,14 @@ import { sections, badgeStyles } from './data';
 import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
+import { useAuth } from './hooks/useAuth';
+import { logout } from './firebase';
 import { Countdown, DEPART } from './components/Countdown';
 import { Checklist } from './components/Checklist';
 import { JollySection } from './components/JollySection';
 import { Section } from './components/Section';
 import { NextActivity } from './components/NextActivity';
+import { LoginScreen } from './components/LoginScreen';
 import './App.css';
 import type {
   Row, DayInfo, AlertData, ItineraryData, ChecklistData,
@@ -18,7 +21,14 @@ import type {
 const TRIP_END = new Date('2026-06-06T00:00:00');
 
 export default function App() {
+  const { state } = useAuth();
   const [dark, setDark] = useDarkMode();
+
+  if (state === 'loading') return (
+    <div className="page"><div className="loading-screen"><p className="loading-text">Caricamento…</p></div></div>
+  );
+  if (state === 'unauthenticated') return <LoginScreen />;
+  if (state === 'denied') return <LoginScreen denied />;
   const [weatherData, setWeatherData] = useState<WeatherDataMap>({});
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState<Date | null>(null);
   const [cardVersions, setCardVersions] = useState<Record<string, number>>({});
@@ -215,9 +225,12 @@ export default function App() {
             </p>
             {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
           </div>
-          <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
-            {dark ? '☀️' : '🌙'}
-          </button>
+          <div className="header-actions">
+            <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
+              {dark ? '☀️' : '🌙'}
+            </button>
+            <button className="logout-btn" onClick={logout} title="Esci">↪</button>
+          </div>
           <div className="legend">
             {Object.entries(badgeStyles).map(([key, val]) => (
               <div className="legend-item" key={key}>

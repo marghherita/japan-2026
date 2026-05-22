@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, get, set } from 'firebase/database';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import type {
   ItineraryData,
   ChecklistData,
@@ -20,6 +21,11 @@ const app = initializeApp({
 });
 
 export const db = getDatabase(app);
+
+export const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const logout = () => signOut(auth);
 
 const load = <T>(path: string): Promise<T> =>
   get(ref(db, path)).then((snap) => (snap.val() as T) ?? ({} as T));
