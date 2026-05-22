@@ -294,10 +294,12 @@ body {
 .alert-edit-btn:hover { opacity: 1; }
 
 .add-alert-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
   width: 100%; background: none;
-  border: 1.5px dashed var(--border); border-radius: 6px;
-  color: var(--text-tertiary); font-size: 0.78rem;
-  padding: 6px 10px; cursor: pointer; margin-bottom: 8px; text-align: left;
+  border: 1.5px dashed var(--border); border-radius: 8px;
+  color: var(--text-tertiary); font-size: 12px;
+  padding: 9px 0; cursor: pointer; margin-bottom: 8px;
+  font-family: inherit; letter-spacing: 0.02em;
 }
 .add-alert-btn:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
 
