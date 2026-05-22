@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { sections, badgeStyles } from './data';
+import { sections } from './data';
 import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -210,7 +210,6 @@ export default function App() {
       <header className="header">
         <div>
           <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
-          <p className="header-sub">Osaka · Kobe · Kyoto · Uji · Nara · Tokyo</p>
           <p className="header-sub">
             24 mag – 5 giu 2026 &nbsp;·&nbsp;{' '}
             <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
@@ -224,14 +223,6 @@ export default function App() {
             {dark ? '☀️' : '🌙'}
           </button>
           <button className="logout-btn" onClick={logout} title="Esci">↪</button>
-        </div>
-        <div className="legend">
-          {Object.entries(badgeStyles).map(([key, val]) => (
-            <div className="legend-item" key={key}>
-              <span className="legend-dot" style={{ background: val.color }} />
-              {val.label}
-            </div>
-          ))}
         </div>
       </header>
 

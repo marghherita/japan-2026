@@ -6,6 +6,9 @@
   --text-primary: #1a1814;
   --text-secondary: #6b6560;
   --text-tertiary: #9e9890;
+  --accent: #ff4328;
+  --accent-muted: rgba(255,67,40,0.07);
+  --accent-text: #c0321c;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,27 +55,6 @@ body {
   letter-spacing: 0.01em;
 }
 
-.legend {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 0.875rem;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.legend-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
 
 /* ── SECTION ────────────────────────────────────────────────────────────── */
 .section { margin-bottom: 6px; }
@@ -177,8 +159,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #2563eb;
-  background: #dbeafe;
+  color: var(--accent);
+  background: var(--accent-muted);
   padding: 2px 7px;
   border-radius: 20px;
   flex-shrink: 0;
@@ -467,7 +449,7 @@ body {
 }
 
 .note-link {
-  color: #3B82F6;
+  color: var(--accent);
   text-decoration: underline;
   word-break: break-all;
 }
@@ -637,7 +619,7 @@ body {
   transition: border-color 0.15s;
 }
 
-.modal-input:focus { border-bottom-color: var(--text-secondary); }
+.modal-input:focus { border-bottom-color: var(--accent); }
 
 .modal-tags {
   display: flex;
@@ -676,7 +658,7 @@ body {
   transition: border-color 0.15s;
 }
 
-.modal-select:focus { border-bottom-color: var(--text-secondary); }
+.modal-select:focus { border-bottom-color: var(--accent); }
 
 .modal-footer {
   padding: 0.75rem 1.25rem;
@@ -703,7 +685,7 @@ body {
 .modal-btn-save {
   flex: 1;
   padding: 12px 20px;
-  background: var(--text-primary);
+  background: var(--accent);
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -790,7 +772,7 @@ body {
 }
 
 
-.weather-live { color: #22C55E; font-weight: 500; }
+.weather-live { color: var(--accent); font-weight: 500; }
 .weather-live::before {
   content: "●";
   margin-right: 5px;
@@ -905,7 +887,7 @@ body {
 .cl-progress-bar {
   display: block;
   height: 100%;
-  background: #22C55E;
+  background: var(--accent);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -913,7 +895,7 @@ body {
 .cl-pct {
   font-size: 11px;
   font-weight: 600;
-  color: #22C55E;
+  color: var(--accent);
   min-width: 30px;
   text-align: right;
   flex-shrink: 0;
@@ -984,7 +966,7 @@ body {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #22C55E;
+  accent-color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -1045,12 +1027,12 @@ body {
 .jolly-activity-row:last-of-type { border-bottom: none; }
 
 .jolly-insert-btn {
-  background: none; border: 1px solid #A78BFA; border-radius: 6px;
-  color: #7C3AED; font-size: 11px; font-weight: 500;
+  background: none; border: 1px solid rgba(255,67,40,0.35); border-radius: 6px;
+  color: var(--accent); font-size: 11px; font-weight: 500;
   padding: 4px 8px; cursor: pointer; white-space: nowrap;
   flex-shrink: 0; font-family: inherit;
 }
-.jolly-insert-btn:active { background: #F5F3FF; }
+.jolly-insert-btn:active { background: var(--accent-muted); }
 
 .jolly-activity-preview {
   display: flex; gap: 10px; align-items: center;
@@ -1087,7 +1069,7 @@ body {
   .section-label:hover { color: var(--text-secondary); }
   .day-head:hover { background: #fafaf8; }
   .cl-head:hover { background: #fafaf8; }
-  .jolly-insert-btn:hover { background: #F5F3FF; }
+  .jolly-insert-btn:hover { background: var(--accent-muted); }
   .jolly-day-item:hover { background: #fafaf8; }
   .cl-cat-head:hover { background: #f5f4f2; }
   .cl-item:hover { background: #f5f4f2; }
@@ -1158,10 +1140,10 @@ body {
 
 /* ── TODAY HIGHLIGHT ────────────────────────────────────────────────────── */
 .day-card-today {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 1.5px rgba(59,130,246,.25) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1.5px rgba(255,67,40,.18) !important;
 }
-.day-card-today .day-head { background: #eff6ff; }
+.day-card-today .day-head { background: rgba(255,67,40,0.04); }
 .dark .day-card-today .day-head { background: #0a1628; }
 
 /* ── DAY EDIT BUTTON ─────────────────────────────────────────────────────── */
@@ -1181,16 +1163,16 @@ body {
 .next-activity {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   margin-top: 8px; padding: 7px 12px;
-  background: #f0fdf4; border-radius: 8px;
-  border-left: 3px solid #22c55e;
+  background: var(--accent-muted); border-radius: 8px;
+  border-left: 3px solid var(--accent);
   font-size: 12px;
 }
 .next-activity-label {
   font-size: 10px; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; color: #15803d;
+  text-transform: uppercase; color: var(--accent-text);
 }
 .next-activity-text { color: #1a1814; font-weight: 500; flex: 1; min-width: 0; }
-.next-activity-time { color: #15803d; white-space: nowrap; font-weight: 500; }
+.next-activity-time { color: var(--accent-text); white-space: nowrap; font-weight: 500; }
 .dark .next-activity { background: #071a0f; border-left-color: #22c55e; }
 .dark .next-activity-text { color: var(--text-primary); }
 .dark .next-activity-time { color: #86efac; }
