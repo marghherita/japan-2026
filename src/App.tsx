@@ -21,19 +21,13 @@ import type {
 const TRIP_END = new Date('2026-06-06T00:00:00');
 
 export default function App() {
+  // ── ALL hooks must run unconditionally ────────────────────────────────────
   const { state } = useAuth();
   const [dark, setDark] = useDarkMode();
-
-  if (state === 'loading') return (
-    <div className="page"><div className="loading-screen"><p className="loading-text">Caricamento…</p></div></div>
-  );
-  if (state === 'unauthenticated') return <LoginScreen />;
-  if (state === 'denied') return <LoginScreen denied />;
   const [weatherData, setWeatherData] = useState<WeatherDataMap>({});
   const [weatherUpdatedAt, setWeatherUpdatedAt] = useState<Date | null>(null);
   const [cardVersions, setCardVersions] = useState<Record<string, number>>({});
 
-  // ── Firebase real-time sync (feature 1) ──────────────────────────────────
   const [itinerary, setItinerary]           = useFirebaseSync<ItineraryData>('itinerary');
   const [checklist, setChecklist]           = useFirebaseSync<ChecklistData>('checklist');
   const [alerts, setAlerts]                 = useFirebaseSync<AlertsData>('alerts');
@@ -46,7 +40,6 @@ export default function App() {
     [],
   );
 
-  // ── Auto-open today's section (feature 2) ────────────────────────────────
   const todayKey = useMemo(() => {
     const t = new Date();
     if (t < DEPART || t >= TRIP_END) return null;
@@ -65,7 +58,6 @@ export default function App() {
 
   useEffect(() => {
     if (!todayKey) return;
-    // Double rAF: first frame opens section, second frame DayCard is in DOM
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         document.getElementById(todayKey)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -73,7 +65,6 @@ export default function App() {
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Weather (auto-refresh every 30 min) ──────────────────────────────────
   useEffect(() => {
     const load = () =>
       fetchAllWeather()
@@ -89,8 +80,6 @@ export default function App() {
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-
-  // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleRowsChange = useCallback((key: string, rows: Row[]) => {
     setItinerary((prev) => prev ? { ...prev, [key]: rows } : prev);
@@ -113,7 +102,6 @@ export default function App() {
     setJollies(newJollies);
   }, [setJollies]);
 
-  // Feature 3: edit day title and badge
   const handleDayEdit = useCallback((dayKey: string, patch: { title?: string; badge?: string }) => {
     if (patch.title !== undefined)
       setTitleOverrides((prev) => prev ? { ...prev, [dayKey]: patch.title! } : prev);
@@ -185,8 +173,14 @@ export default function App() {
 
   const toggle = (id: string) => setActiveSection((cur) => (cur === id ? null : id));
 
-  // ── Loading ───────────────────────────────────────────────────────────────
+  // ── Auth guard (after all hooks) ──────────────────────────────────────────
+  if (state === 'loading') return (
+    <div className="page"><div className="loading-screen"><p className="loading-text">Caricamento…</p></div></div>
+  );
+  if (state === 'unauthenticated') return <LoginScreen />;
+  if (state === 'denied') return <LoginScreen denied />;
 
+  // ── Data loading ──────────────────────────────────────────────────────────
   if (
     itinerary === null || checklist === null || alerts === null ||
     jollies === null || titleOverrides === null || badgeOverrides === null
@@ -213,74 +207,74 @@ export default function App() {
 
   return (
     <div className="page">
-        <header className="header">
-          <div>
-            <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
-            <p className="header-sub">Osaka · Kobe · Kyoto · Uji · Nara · Tokyo</p>
-            <p className="header-sub">
-              24 mag – 5 giu 2026 &nbsp;·&nbsp;{' '}
-              <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
-                {weatherLabel}
-              </span>
-            </p>
-            {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
-          </div>
-          <div className="header-actions">
-            <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
-              {dark ? '☀️' : '🌙'}
-            </button>
-            <button className="logout-btn" onClick={logout} title="Esci">↪</button>
-          </div>
-          <div className="legend">
-            {Object.entries(badgeStyles).map(([key, val]) => (
-              <div className="legend-item" key={key}>
-                <span className="legend-dot" style={{ background: val.color }} />
-                {val.label}
-              </div>
-            ))}
-          </div>
-        </header>
-
-        <main>
-          <Countdown />
-          {DEPART > new Date() && (
-            <Checklist state={checklist} onChange={handleChecklistChange} />
-          )}
-          <JollySection
-            jollies={jollies}
-            onChange={handleJolliesChange}
-            allDays={allDays}
-            onInsert={handleInsertJollyActivity}
-          />
-          {sections.map((s) => (
-            <Section
-              key={s.id}
-              section={s}
-              activeSection={activeSection}
-              onToggle={toggle}
-              weatherData={weatherData}
-              itinerary={itinerary}
-              onRowsChange={handleRowsChange}
-              allDays={allDays}
-              onMoveRow={handleMoveRow}
-              cardVersions={cardVersions}
-              alerts={alerts}
-              onAlertChange={handleAlertChange}
-              titleOverrides={titleOverrides}
-              badgeOverrides={badgeOverrides}
-              onDayEdit={handleDayEdit}
-              onSwapDay={handleSwapDays}
-              todayKey={todayKey}
-            />
+      <header className="header">
+        <div>
+          <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
+          <p className="header-sub">Osaka · Kobe · Kyoto · Uji · Nara · Tokyo</p>
+          <p className="header-sub">
+            24 mag – 5 giu 2026 &nbsp;·&nbsp;{' '}
+            <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
+              {weatherLabel}
+            </span>
+          </p>
+          {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
+        </div>
+        <div className="header-actions">
+          <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
+            {dark ? '☀️' : '🌙'}
+          </button>
+          <button className="logout-btn" onClick={logout} title="Esci">↪</button>
+        </div>
+        <div className="legend">
+          {Object.entries(badgeStyles).map(([key, val]) => (
+            <div className="legend-item" key={key}>
+              <span className="legend-dot" style={{ background: val.color }} />
+              {val.label}
+            </div>
           ))}
-        </main>
+        </div>
+      </header>
 
-        <footer className="footer">
-          <span>Janap 2026</span>
-          <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
-            {weatherLabel}
-          </span>
-        </footer>
-      </div>
+      <main>
+        <Countdown />
+        {DEPART > new Date() && (
+          <Checklist state={checklist} onChange={handleChecklistChange} />
+        )}
+        <JollySection
+          jollies={jollies}
+          onChange={handleJolliesChange}
+          allDays={allDays}
+          onInsert={handleInsertJollyActivity}
+        />
+        {sections.map((s) => (
+          <Section
+            key={s.id}
+            section={s}
+            activeSection={activeSection}
+            onToggle={toggle}
+            weatherData={weatherData}
+            itinerary={itinerary}
+            onRowsChange={handleRowsChange}
+            allDays={allDays}
+            onMoveRow={handleMoveRow}
+            cardVersions={cardVersions}
+            alerts={alerts}
+            onAlertChange={handleAlertChange}
+            titleOverrides={titleOverrides}
+            badgeOverrides={badgeOverrides}
+            onDayEdit={handleDayEdit}
+            onSwapDay={handleSwapDays}
+            todayKey={todayKey}
+          />
+        ))}
+      </main>
+
+      <footer className="footer">
+        <span>Janap 2026</span>
+        <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
+          {weatherLabel}
+        </span>
+      </footer>
+    </div>
   );
 }

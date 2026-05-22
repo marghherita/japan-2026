@@ -8,17 +8,10 @@ interface Props {
 
 export function LoginScreen({ denied }: Props) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     setLoading(true);
-    setError(null);
-    try {
-      await loginWithGoogle();
-    } catch {
-      setError('Accesso annullato o non riuscito.');
-      setLoading(false);
-    }
+    loginWithGoogle();
   };
 
   return (
@@ -45,7 +38,6 @@ export function LoginScreen({ denied }: Props) {
               </svg>
               {loading ? 'Accesso…' : 'Accedi con Google'}
             </button>
-            {error && <p className="login-error">{error}</p>}
           </>
         )}
       </div>
