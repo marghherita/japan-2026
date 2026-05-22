@@ -38,7 +38,7 @@ export function ThreeDotMenu({ onEdit, onDelete }: Props) {
 
   return (
     <div className="row-menu">
-      <button ref={btnRef} className="row-menu-btn" onClick={toggle} title="Opzioni"><MoreVertical size={16} /></button>
+      <button ref={btnRef} className="row-menu-btn" onClick={toggle} onMouseDown={(e) => e.stopPropagation()} title="Opzioni"><MoreVertical size={16} /></button>
       {open && createPortal(
         <div
           ref={dropRef}
