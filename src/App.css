@@ -393,7 +393,7 @@ body {
   margin-left: -8px;
   margin-right: -8px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.1s, transform 0.18s ease;
   min-height: 44px;
 }
 
