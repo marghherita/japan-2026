@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import { GripVertical } from 'lucide-react';
 import { CSS } from '@dnd-kit/utilities';
 import { ThreeDotMenu } from './ThreeDotMenu';
 import { RowContent } from './RowContent';
@@ -26,13 +25,18 @@ export function SortableRow({ id, row, idx, mapNum, startEdit, deleteRow, onTogg
   const didSwipe = useRef(false);
   const [swipeX, setSwipeX] = useState(0);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // dnd-kit's TouchSensor registers onTouchStart — call it alongside our handler
+  const dndTouchStart = (listeners as { onTouchStart?: React.TouchEventHandler<HTMLDivElement> } | undefined)?.onTouchStart;
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    dndTouchStart?.(e);
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     didSwipe.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging) return;
     const dx = e.touches[0].clientX - touchStartX.current;
     const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
     if (dx > 0 && dx > dy) {
@@ -41,6 +45,7 @@ export function SortableRow({ id, row, idx, mapNum, startEdit, deleteRow, onTogg
   };
 
   const handleTouchEnd = () => {
+    if (isDragging) { setSwipeX(0); return; }
     if (swipeX > SWIPE_THRESHOLD) {
       didSwipe.current = true;
       onToggleDone(idx);
@@ -70,20 +75,14 @@ export function SortableRow({ id, row, idx, mapNum, startEdit, deleteRow, onTogg
       ref={setNodeRef}
       style={style}
       className={`row${row.done ? ' row-done' : ''}`}
+      {...attributes}
+      {...listeners}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onClick={handleClick}
       title={row.done ? 'Segna come non fatto' : 'Segna come fatto'}
     >
-      <span
-        className="drag-handle"
-        {...attributes}
-        {...listeners}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <GripVertical size={14} />
-      </span>
       <span className="time">{row.time}</span>
       {mapNum != null && <span className="row-map-num">{mapNum}</span>}
       <RowContent text={row.text} url={row.url} tags={row.tags} note={row.note} />

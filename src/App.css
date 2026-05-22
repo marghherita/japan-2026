@@ -430,19 +430,6 @@ body {
 }
 
 /* Buttons: always visible at low opacity on touch; hover-only on pointer devices */
-.drag-handle {
-  opacity: 0;
-  cursor: grab;
-  user-select: none;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 8px;
-  min-width: 8px;
-  min-height: 36px;
-  overflow: hidden;
-}
 
 .edit-btn {
   background: none;
