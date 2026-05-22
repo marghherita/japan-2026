@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { sections } from './data';
 import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
@@ -60,6 +60,24 @@ export default function App() {
   }, [todayKey]);
 
   const [activeSection, setActiveSection] = useState<string | null>(initialSection);
+
+  const seeded = useRef(false);
+  const [itineraryReady, setItineraryReady] = useState(false);
+  useEffect(() => {
+    if (itinerary === null || seeded.current) return;
+    seeded.current = true;
+    const missing: ItineraryData = {};
+    sections.forEach((s) => s.days.forEach((d) => {
+      const key = d.date ?? d.title;
+      if (!itinerary[key]?.length) {
+        missing[key] = d.rows.map((r, i) => ({ ...r, _id: `${key}-${i}` }));
+      }
+    }));
+    if (Object.keys(missing).length > 0) {
+      setItinerary((prev) => prev ? { ...prev, ...missing } : missing);
+    }
+    setItineraryReady(true);
+  }, [itinerary, setItinerary]);
 
   useEffect(() => {
     if (!todayKey) return;
@@ -192,7 +210,7 @@ export default function App() {
 
   // ── Data loading ──────────────────────────────────────────────────────────
   if (
-    itinerary === null || checklist === null || alerts === null ||
+    !itineraryReady || itinerary === null || checklist === null || alerts === null ||
     jollies === null || titleOverrides === null || badgeOverrides === null
   ) {
     return (
