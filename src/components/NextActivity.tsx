@@ -1,12 +1,12 @@
-import { sections } from '../data';
-import type { ItineraryData, Row } from '../types';
+import type { ItineraryData, Row, SectionData } from '../types';
 
 interface Props {
   itinerary: ItineraryData;
   now: Date;
+  sections: SectionData[];
 }
 
-export function NextActivity({ itinerary, now }: Props) {
+export function NextActivity({ itinerary, now, sections }: Props) {
   const todayStr = now.toISOString().slice(0, 10);
   const todayDay = sections.flatMap((s) => s.days).find((d) => d.date === todayStr);
   if (!todayDay) return null;

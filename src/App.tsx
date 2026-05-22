@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { sections } from './data';
+import { initialSections } from './data';
 import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -18,7 +18,7 @@ import './App.css';
 import type {
   Row, DayInfo, AlertData, ItineraryData, ChecklistData,
   AlertsData, TitleOverridesData, BadgeOverridesData, JolliesData,
-  WeatherDataMap, ChecklistItem, DayTagsData,
+  WeatherDataMap, ChecklistItem, DayTagsData, SectionData,
 } from './types';
 
 const TRIP_END = new Date('2026-06-06T00:00:00');
@@ -39,10 +39,11 @@ export default function App() {
   const [badgeOverrides, setBadgeOverrides] = useFirebaseSync<BadgeOverridesData>('badgeOverrides');
   const [jollies, setJollies]               = useFirebaseSync<JolliesData>('jollies');
   const [dayTags, setDayTags]               = useFirebaseSync<DayTagsData>('dayTags');
+  const [sections, setSections]             = useFirebaseSync<SectionData[]>('sections');
 
   const allDays = useMemo<DayInfo[]>(
-    () => sections.flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
-    [],
+    () => (Array.isArray(sections) ? sections : []).flatMap((s) => s.days.map((d) => ({ key: d.date ?? d.title, label: d.title, badge: d.badge }))),
+    [sections],
   );
 
   const todayKey = useMemo(() => {
@@ -52,19 +53,27 @@ export default function App() {
   }, []);
 
   const initialSection = useMemo(() => {
-    if (todayKey) {
+    if (todayKey && Array.isArray(sections)) {
       const sec = sections.find((s) => s.days.some((d) => d.date === todayKey));
       if (sec) return sec.id;
     }
     return 'osaka';
-  }, [todayKey]);
+  }, [todayKey, sections]);
 
   const [activeSection, setActiveSection] = useState<string | null>(initialSection);
 
+  const sectionSeeded = useRef(false);
   const seeded = useRef(false);
   const [itineraryReady, setItineraryReady] = useState(false);
+
   useEffect(() => {
-    if (itinerary === null || seeded.current) return;
+    if (sections === null || sectionSeeded.current) return;
+    sectionSeeded.current = true;
+    if (!Array.isArray(sections) || sections.length === 0) setSections(initialSections);
+  }, [sections, setSections]);
+
+  useEffect(() => {
+    if (itinerary === null || !Array.isArray(sections) || sections.length === 0 || seeded.current) return;
     seeded.current = true;
     const missing: ItineraryData = {};
     sections.forEach((s) => s.days.forEach((d) => {
@@ -77,7 +86,7 @@ export default function App() {
       setItinerary((prev) => prev ? { ...prev, ...missing } : missing);
     }
     setItineraryReady(true);
-  }, [itinerary, setItinerary]);
+  }, [itinerary, sections, setItinerary]);
 
   useEffect(() => {
     if (!todayKey) return;
@@ -138,7 +147,7 @@ export default function App() {
   }, [setTitleOverrides, setBadgeOverrides]);
 
   const handleSwapDays = useCallback((keyA: string, keyB: string) => {
-    const allDaysList = sections.flatMap((s) => s.days);
+    const allDaysList = (Array.isArray(sections) ? sections : []).flatMap((s) => s.days);
     const dayA = allDaysList.find((d) => (d.date ?? d.title) === keyA);
     const dayB = allDaysList.find((d) => (d.date ?? d.title) === keyB);
 
@@ -261,8 +270,8 @@ export default function App() {
           allDays={allDays}
           onInsert={handleInsertJollyActivity}
         />
-        {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
-        {sections.map((s) => (
+        {duringTrip && Array.isArray(sections) && <NextActivity itinerary={itinerary} now={now} sections={sections} />}
+        {(Array.isArray(sections) ? sections : []).map((s) => (
           <Section
             key={s.id}
             section={s}

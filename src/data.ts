@@ -1,6 +1,6 @@
 import type { SectionData, TagStyle, BadgeStyle } from './types';
 
-export const sections: SectionData[] = [
+export const initialSections: SectionData[] = [
   {
     id: 'osaka',
     label: '🏯 Osaka',
