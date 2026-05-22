@@ -4,9 +4,8 @@ import { fetchAllWeather } from './weather';
 import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useAuth } from './hooks/useAuth';
-import { logout } from './firebase';
-import { LogOut } from 'lucide-react';
-import { Countdown, DEPART } from './components/Countdown';
+import { DEPART } from './components/Countdown';
+import { AppHeader } from './components/AppHeader';
 import { Checklist } from './components/Checklist';
 import { JollySection } from './components/JollySection';
 import { Section } from './components/Section';
@@ -241,26 +240,16 @@ export default function App() {
 
   return (
     <div className="page">
-      <header className="header">
-        <div>
-          <h1>Janap 🏯​⛩️​🍙​🍱​🍜​🍥​</h1>
-          <p className="header-sub">
-            24 mag – 5 giu 2026 &nbsp;·&nbsp;{' '}
-            <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
-              {weatherLabel}
-            </span>
-          </p>
-        </div>
-        <div className="header-actions">
-          <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
-            {dark ? '☀️' : '🌙'}
-          </button>
-          <button className="logout-btn" onClick={logout} title="Esci"><LogOut size={15} /></button>
-        </div>
-      </header>
+      <AppHeader
+        dark={dark}
+        onToggleDark={() => setDark((d) => !d)}
+        now={now}
+        sections={Array.isArray(sections) ? sections : []}
+        titleOverrides={titleOverrides ?? {}}
+        todayKey={todayKey}
+      />
 
       <main>
-        <Countdown now={now} />
         {DEPART > (DEV_NOW ?? new Date()) && (
           <Checklist state={checklist} onChange={handleChecklistChange} />
         )}
