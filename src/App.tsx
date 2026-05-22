@@ -65,6 +65,7 @@ export default function App() {
   const sectionSeeded = useRef(false);
   const seeded = useRef(false);
   const [itineraryReady, setItineraryReady] = useState(false);
+  const prevActiveSectionRef = useRef<string | null>(initialSection);
 
   useEffect(() => {
     if (sections === null || sectionSeeded.current) return;
@@ -96,6 +97,28 @@ export default function App() {
       });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!activeSection || activeSection === prevActiveSectionRef.current) {
+      prevActiveSectionRef.current = activeSection;
+      return;
+    }
+    prevActiveSectionRef.current = activeSection;
+    if (!Array.isArray(sections) || sections.length === 0) return;
+    const sec = sections.find((s) => s.id === activeSection);
+    if (!sec || sec.days.length === 0) return;
+    let targetKey: string;
+    if (todayKey && sec.days.some((d) => d.date === todayKey)) {
+      targetKey = todayKey;
+    } else {
+      const first = sec.days[0];
+      targetKey = first.date ?? first.title;
+    }
+    const timer = setTimeout(() => {
+      document.getElementById(targetKey)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [activeSection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const load = () =>
