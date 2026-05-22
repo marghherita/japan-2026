@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { ThreeDotMenu } from './ThreeDotMenu';
 import { ChecklistItemModal } from './modals/ChecklistItemModal';
 import { checklistCategories } from '../checklistData';
@@ -54,7 +55,7 @@ function ChecklistCategory({ category, items, onChange }: CategoryProps) {
           <span className="cl-cat-icon">{category.icon}</span>
           <span className="cl-cat-label">{category.label}</span>
           <span className="cl-cat-count">{checkedCount}/{items.length}</span>
-          <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+          <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={14} /></span>
         </button>
         {open && (
           <div className="cl-items">
@@ -71,7 +72,7 @@ function ChecklistCategory({ category, items, onChange }: CategoryProps) {
               </div>
             ))}
             <button className="add-row-btn" onClick={openAdd}>
-              <span className="add-row-icon">＋</span> aggiungi voce
+              <Plus size={14} /> aggiungi voce
             </button>
           </div>
         )}
@@ -108,7 +109,7 @@ export function Checklist({ state, onChange }: Props) {
           <span className="cl-progress-bar" style={{ width: `${pct}%` }} />
         </span>
         <span className="cl-pct">{pct}%</span>
-        <span className="section-chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+        <span className="section-chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={14} /></span>
       </button>
       {open && (
         <div className="cl-body">

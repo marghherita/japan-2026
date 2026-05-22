@@ -5,6 +5,7 @@ import { useFirebaseSync } from './hooks/useFirebaseSync';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useAuth } from './hooks/useAuth';
 import { logout } from './firebase';
+import { LogOut } from 'lucide-react';
 import { Countdown, DEPART } from './components/Countdown';
 import { Checklist } from './components/Checklist';
 import { JollySection } from './components/JollySection';
@@ -19,6 +20,7 @@ import type {
 } from './types';
 
 const TRIP_END = new Date('2026-06-06T00:00:00');
+const DEV_NOW: Date | null = null;
 
 export default function App() {
   // ── ALL hooks must run unconditionally ────────────────────────────────────
@@ -41,7 +43,7 @@ export default function App() {
   );
 
   const todayKey = useMemo(() => {
-    const t = new Date();
+    const t = DEV_NOW ?? new Date();
     if (t < DEPART || t >= TRIP_END) return null;
     return t.toISOString().slice(0, 10);
   }, []);
@@ -75,8 +77,9 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(DEV_NOW ?? new Date());
   useEffect(() => {
+    if (DEV_NOW) return;
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
@@ -216,19 +219,18 @@ export default function App() {
               {weatherLabel}
             </span>
           </p>
-          {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
         </div>
         <div className="header-actions">
           <button className="dark-toggle" onClick={() => setDark((d) => !d)} aria-label="Tema">
             {dark ? '☀️' : '🌙'}
           </button>
-          <button className="logout-btn" onClick={logout} title="Esci">↪</button>
+          <button className="logout-btn" onClick={logout} title="Esci"><LogOut size={15} /></button>
         </div>
       </header>
 
       <main>
-        <Countdown />
-        {DEPART > new Date() && (
+        <Countdown now={now} />
+        {DEPART > (DEV_NOW ?? new Date()) && (
           <Checklist state={checklist} onChange={handleChecklistChange} />
         )}
         <JollySection
@@ -237,6 +239,7 @@ export default function App() {
           allDays={allDays}
           onInsert={handleInsertJollyActivity}
         />
+        {duringTrip && <NextActivity itinerary={itinerary} now={now} />}
         {sections.map((s) => (
           <Section
             key={s.id}

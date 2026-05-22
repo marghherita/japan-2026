@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronDown, Plus } from 'lucide-react';
 import { ThreeDotMenu } from './ThreeDotMenu';
 import { RowContent } from './RowContent';
 import { ActivityModal } from './modals/ActivityModal';
@@ -91,7 +92,7 @@ export function JollySection({ jollies, onChange, allDays, onInsert }: Props) {
           <span className="cl-head-title">✨ Attività extra</span>
           <span className="cl-head-counter">{jollyList.length} attività</span>
         </span>
-        <span className="section-chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+        <span className="section-chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={14} /></span>
       </button>
       {open && (
         <div className="jolly-list">
@@ -110,7 +111,7 @@ export function JollySection({ jollies, onChange, allDays, onInsert }: Props) {
             </div>
           ))}
           <button className="add-row-btn" onClick={openAdd}>
-            <span className="add-row-icon">＋</span> aggiungi attività
+            <Plus size={14} /> aggiungi attività
           </button>
         </div>
       )}

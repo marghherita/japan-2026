@@ -8,8 +8,8 @@ interface TimeLeft {
   mins: number;
 }
 
-function calcLeft(): TimeLeft | null {
-  const diff = DEPART.getTime() - Date.now();
+function calcLeft(now: number): TimeLeft | null {
+  const diff = DEPART.getTime() - now;
   if (diff <= 0) return null;
   return {
     days:  Math.floor(diff / 86400000),
@@ -18,13 +18,12 @@ function calcLeft(): TimeLeft | null {
   };
 }
 
-export function Countdown() {
-  const [left, setLeft] = useState<TimeLeft | null>(calcLeft);
+export function Countdown({ now }: { now: Date }) {
+  const [left, setLeft] = useState<TimeLeft | null>(() => calcLeft(now.getTime()));
 
   useEffect(() => {
-    const t = setInterval(() => setLeft(calcLeft()), 60000);
-    return () => clearInterval(t);
-  }, []);
+    setLeft(calcLeft(now.getTime()));
+  }, [now]);
 
   if (!left) return null;
 

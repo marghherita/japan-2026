@@ -1,4 +1,5 @@
 import { DayCard } from './DayCard';
+import { ChevronDown } from 'lucide-react';
 import type {
   SectionData, WeatherDataMap, Row, DayInfo,
   AlertData, TitleOverridesData, BadgeOverridesData, ItineraryData, AlertsData,
@@ -35,7 +36,7 @@ export function Section({
       <button className="section-label" onClick={() => onToggle(section.id)}>
         <span>{section.label}</span>
         <span className="section-sub">{section.subtitle}</span>
-        <span className="section-chevron" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+        <span className="section-chevron" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={14} /></span>
       </button>
       {isOpen && (
         <div className="section-days">

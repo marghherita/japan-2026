@@ -1,4 +1,5 @@
 import { useSortable } from '@dnd-kit/sortable';
+import { GripVertical } from 'lucide-react';
 import { CSS } from '@dnd-kit/utilities';
 import { ThreeDotMenu } from './ThreeDotMenu';
 import { RowContent } from './RowContent';
@@ -36,7 +37,7 @@ export function SortableRow({ id, row, idx, startEdit, deleteRow, onToggleDone }
         {...listeners}
         onClick={(e) => e.stopPropagation()}
       >
-        ⠿
+        <GripVertical size={14} />
       </span>
       <span className="time">{row.time}</span>
       <RowContent text={row.text} url={row.url} tags={row.tags} note={row.note} />

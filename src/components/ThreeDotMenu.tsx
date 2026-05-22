@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface Props {
@@ -37,19 +38,19 @@ export function ThreeDotMenu({ onEdit, onDelete }: Props) {
 
   return (
     <div className="row-menu">
-      <button ref={btnRef} className="row-menu-btn" onClick={toggle} title="Opzioni">⋮</button>
+      <button ref={btnRef} className="row-menu-btn" onClick={toggle} title="Opzioni"><MoreVertical size={16} /></button>
       {open && createPortal(
         <div
           ref={dropRef}
           className="row-menu-dropdown"
           style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 9999 }}
         >
-          <button onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}>✎ Modifica</button>
+          <button onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }}><Pencil size={13} /> Modifica</button>
           <button
             className="row-menu-delete"
             onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
           >
-            × Elimina
+            <Trash2 size={13} /> Elimina
           </button>
         </div>,
         document.body,

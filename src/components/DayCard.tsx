@@ -7,6 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { badgeStyles } from '../data';
+import { ChevronDown, Pencil, Plus } from 'lucide-react';
 import { SortableRow } from './SortableRow';
 import { DayMap } from './DayMap';
 import { HourlyStrip } from './HourlyStrip';
@@ -268,9 +269,9 @@ export function DayCard({
           title="Modifica giornata"
           onClick={(e) => { e.stopPropagation(); setDayEditOpen(true); }}
         >
-          ✎
+          <Pencil size={13} />
         </button>
-        <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
+        <span className="chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={14} /></span>
       </div>
       {(() => {
         const done = rows.filter((r) => r.done).length;
@@ -296,10 +297,10 @@ export function DayCard({
           {effectiveAlert ? (
             <div className="alert-wrap">
               <AlertBanner alert={effectiveAlert} />
-              <button className="alert-edit-btn" onClick={() => setAlertEditOpen(true)} title="Modifica nota">✎</button>
+              <button className="alert-edit-btn" onClick={() => setAlertEditOpen(true)} title="Modifica nota"><Pencil size={13} /></button>
             </div>
           ) : (
-            <button className="add-alert-btn" onClick={() => setAlertEditOpen(true)}>＋ aggiungi nota</button>
+            <button className="add-alert-btn" onClick={() => setAlertEditOpen(true)}><Plus size={12} /> aggiungi nota</button>
           )}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSortEnd}>
             <SortableContext items={rows.map((r) => r._id)} strategy={verticalListSortingStrategy}>
@@ -317,7 +318,7 @@ export function DayCard({
             </SortableContext>
           </DndContext>
           <button className="add-row-btn" onClick={addRow}>
-            <span className="add-row-icon">＋</span> aggiungi attività
+            <Plus size={14} /> aggiungi attività
           </button>
         </div>
       )}

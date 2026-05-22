@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { tagColors } from '../../data';
 import { formatDayOption } from '../../utils/time';
 import { BaseModal } from './BaseModal';
@@ -114,7 +115,7 @@ export function ActivityModal({
                   style={{ background: s.bg, color: s.color, borderColor: s.bg }}
                   onClick={() => removeTag(t)}
                 >
-                  {t}<span className="modal-tag-x" aria-hidden>×</span>
+                  {t}<span className="modal-tag-x" aria-hidden><X size={10} /></span>
                 </button>
               );
             })}

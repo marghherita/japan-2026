@@ -518,7 +518,7 @@ body {
   min-height: 42px;
 }
 
-.add-row-icon { font-size: 14px; line-height: 1; }
+.add-row-icon { display: flex; align-items: center; }
 
 /* ── MODAL (bottom sheet on mobile) ─────────────────────────────────────── */
 .modal-backdrop {
@@ -1200,21 +1200,24 @@ body {
 /* ── NEXT ACTIVITY (feature 4) ──────────────────────────────────────────── */
 .next-activity {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  margin-top: 8px; padding: 7px 12px;
-  background: var(--accent-muted); border-radius: 8px;
+  margin-bottom: 1.25rem; padding: 10px 14px;
+  background: var(--bg-card);
+  border: .5px solid var(--border);
   border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   font-size: 12px;
 }
 .next-activity-label {
   font-size: 10px; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; color: var(--accent-text);
+  text-transform: uppercase; color: var(--accent);
 }
-.next-activity-text { color: #1a1814; font-weight: 500; flex: 1; min-width: 0; }
-.next-activity-time { color: var(--accent-text); white-space: nowrap; font-weight: 500; }
-.dark .next-activity { background: #071a0f; border-left-color: #22c55e; }
+.next-activity-text { color: var(--text-primary); font-weight: 500; flex: 1; min-width: 0; }
+.next-activity-time { color: var(--text-secondary); white-space: nowrap; font-weight: 500; }
+.dark .next-activity { background: var(--bg-card); border-color: var(--border); border-left-color: var(--accent); box-shadow: none; }
+.dark .next-activity-label { color: var(--accent); }
 .dark .next-activity-text { color: var(--text-primary); }
-.dark .next-activity-time { color: #86efac; }
-.dark .next-activity-label { color: #86efac; }
+.dark .next-activity-time { color: var(--text-secondary); }
 
 /* ── DARK MODE TOGGLE ───────────────────────────────────────────────────── */
 .header-actions {
