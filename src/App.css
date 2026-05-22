@@ -1258,7 +1258,7 @@ body {
   width: min(260px, 65vw);
   height: auto;
   user-select: none;
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(1) sepia(0.08) saturate(0.7) brightness(0.98);
 }
 
 .login-google-btn {
@@ -1269,12 +1269,12 @@ body {
   width: min(280px, 75vw);
   min-height: 54px;
   padding: 0 24px;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.5);
+  background: rgba(246,245,239,0.15);
+  border: 1.5px solid rgba(246,245,239,0.5);
   border-radius: 100px;
   font-size: 15px;
   font-weight: 600;
-  color: #fff;
+  color: #f6f5ef;
   cursor: pointer;
   font-family: inherit;
   letter-spacing: -0.01em;
@@ -1284,18 +1284,18 @@ body {
   -webkit-backdrop-filter: blur(4px);
 }
 .login-google-btn:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,0.8);
+  background: rgba(246,245,239,0.25);
+  border-color: rgba(246,245,239,0.8);
 }
 .login-google-btn:active { transform: scale(0.975); }
-.login-google-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.login-google-btn:focus-visible { outline: 2px solid #f6f5ef; outline-offset: 3px; }
 .login-google-btn:disabled { opacity: 0.45; cursor: default; transform: none; }
 
 .login-spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+  border: 2px solid rgba(246,245,239,0.3);
+  border-top-color: #f6f5ef;
   border-radius: 50%;
   animation: login-spin 0.7s linear infinite;
   flex-shrink: 0;
