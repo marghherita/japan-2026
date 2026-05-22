@@ -88,7 +88,7 @@ export function JollySection({ jollies, onChange, allDays, onInsert }: Props) {
       )}
       <button className="cl-head" onClick={() => setOpen((o) => !o)}>
         <span className="cl-head-left">
-          <span className="cl-head-title">🃏 Attività jolly</span>
+          <span className="cl-head-title">✨ Attività extra</span>
           <span className="cl-head-counter">{jollyList.length} attività</span>
         </span>
         <span className="section-chevron" style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>▾</span>
