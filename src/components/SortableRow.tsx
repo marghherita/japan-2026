@@ -84,7 +84,9 @@ export function SortableRow({ id, row, idx, mapNum, startEdit, deleteRow, onTogg
       title={row.done ? 'Segna come non fatto' : 'Segna come fatto'}
     >
       <span className="time">{row.time}</span>
-      {mapNum != null && <span className="row-map-num">{mapNum}</span>}
+      <span className="row-map-num" style={mapNum == null ? { visibility: 'hidden' } : undefined}>
+        {mapNum}
+      </span>
       <RowContent text={row.text} url={row.url} tags={row.tags} note={row.note} />
       <ThreeDotMenu onEdit={() => startEdit(idx)} onDelete={() => deleteRow(idx)} />
     </div>
