@@ -185,7 +185,7 @@ export default function App() {
 
   // ── Auth guard (after all hooks) ──────────────────────────────────────────
   if (state === 'loading') return (
-    <div className="page"><div className="loading-screen"><p className="loading-text">Caricamento…</p></div></div>
+    <div className="page"><div className="loading-screen"><img src={loghino} className="loading-logo" alt="" /></div></div>
   );
   if (state === 'unauthenticated') return <LoginScreen />;
   if (state === 'denied') return <LoginScreen denied />;
@@ -198,10 +198,7 @@ export default function App() {
     return (
       <div className="page">
         <div className="loading-screen">
-          <p className="loading-text">Caricamento…</p>
-          <button className="loading-retry" onClick={() => window.location.reload()}>
-            Riprova
-          </button>
+          <img src={loghino} className="loading-logo" alt="" />
         </div>
       </div>
     );

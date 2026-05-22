@@ -747,31 +747,26 @@ body {
 .modal-btn-save:active { transform: scale(0.97); }
 
 /* ── LOADING SCREEN ─────────────────────────────────────────────────────── */
+@keyframes loading-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.55; }
+}
+
 .loading-screen {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.25rem;
-  min-height: 40vh;
+  position: fixed;
+  inset: 0;
 }
 
-.loading-text {
-  font-size: 14px;
-  color: var(--text-tertiary);
+.loading-logo {
+  width: 72px;
+  height: 72px;
+  animation: loading-pulse 1.6s ease-in-out infinite;
 }
 
-.loading-retry {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-}
-.loading-retry:active { background: var(--border-light); }
+.dark .loading-logo { filter: invert(1); }
 
 /* ── FOOTER ─────────────────────────────────────────────────────────────── */
 .footer {
