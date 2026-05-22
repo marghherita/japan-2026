@@ -12,6 +12,8 @@ import { JollySection } from './components/JollySection';
 import { Section } from './components/Section';
 import { NextActivity } from './components/NextActivity';
 import { LoginScreen } from './components/LoginScreen';
+import loghino from './assets/loghino.svg';
+import janapTypo from './assets/janap_typo.svg';
 import './App.css';
 import type {
   Row, DayInfo, AlertData, ItineraryData, ChecklistData,
@@ -264,7 +266,8 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <span>Janap 2026</span>
+        <img src={loghino} alt="" className="footer-logo" />
+        <img src={janapTypo} alt="Janap" className="footer-typo" />
         <span className={weatherUpdatedAt ? 'weather-live' : 'weather-loading'}>
           {weatherLabel}
         </span>

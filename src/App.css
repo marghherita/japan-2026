@@ -775,11 +775,31 @@ body {
   font-size: 12px;
   color: var(--text-tertiary);
   display: flex;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
   z-index: 100;
 }
+
+.footer-logo {
+  height: 28px;
+  width: auto;
+  user-select: none;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+.footer-typo {
+  height: 42px;
+  width: auto;
+  user-select: none;
+  opacity: 0.55;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.dark .footer-logo,
+.dark .footer-typo { filter: invert(1); }
 
 /* ── MAP ────────────────────────────────────────────────────────────────── */
 .day-map {
