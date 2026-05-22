@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { tagColors } from '../../data';
 import { formatDayOption } from '../../utils/time';
 import { BaseModal } from './BaseModal';
@@ -17,16 +18,28 @@ interface Props {
 export function ActivityModal({
   isNew, editVals, setEditVals, onSave, onCancel, allDays, currentDayKey,
 }: Props) {
+  const [tagInput, setTagInput] = useState('');
+
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') { e.preventDefault(); onSave(); }
   };
 
-  const toggleTag = (tag: string) => {
-    setEditVals((v) => ({
-      ...v,
-      tags: v.tags.includes(tag) ? v.tags.filter((t) => t !== tag) : [...v.tags, tag],
-    }));
+  const removeTag = (tag: string) => {
+    setEditVals((v) => ({ ...v, tags: v.tags.filter((t) => t !== tag) }));
   };
+
+  const addTag = (tag: string) => {
+    const t = tag.trim().toLowerCase();
+    if (!t || editVals.tags.includes(t)) return;
+    setEditVals((v) => ({ ...v, tags: [...v.tags, t] }));
+  };
+
+  const commitInput = () => {
+    addTag(tagInput);
+    setTagInput('');
+  };
+
+  const presets = Object.keys(tagColors).filter((t) => !editVals.tags.includes(t));
 
   const footer = (
     <>
@@ -85,25 +98,60 @@ export function ActivityModal({
           onKeyDown={handleKey}
         />
       </div>
+
       <div className="modal-field">
         <label>Tag <span>(opzionale)</span></label>
-        <div className="modal-tags">
-          {Object.entries(tagColors).map(([tag, s]) => {
-            const active = editVals.tags.includes(tag);
-            return (
+
+        {editVals.tags.length > 0 && (
+          <div className="modal-tags modal-tags-active">
+            {editVals.tags.map((t) => {
+              const s = tagColors[t] ?? { bg: '#f3f4f6', color: '#374151' };
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  className="modal-tag modal-tag-active"
+                  style={{ background: s.bg, color: s.color, borderColor: s.bg }}
+                  onClick={() => removeTag(t)}
+                >
+                  {t}<span className="modal-tag-x" aria-hidden>×</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="modal-tag-input-row">
+          <input
+            className="modal-input"
+            value={tagInput}
+            placeholder="Nuovo tag…"
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); commitInput(); }
+            }}
+          />
+          {tagInput.trim() && (
+            <button type="button" className="modal-tag-add-btn" onClick={commitInput}>+</button>
+          )}
+        </div>
+
+        {presets.length > 0 && (
+          <div className="modal-tags">
+            {presets.map((tag) => (
               <button
                 key={tag}
                 type="button"
-                className={`modal-tag${active ? ' modal-tag-active' : ''}`}
-                style={active ? { background: s.bg, color: s.color, borderColor: s.bg } : {}}
-                onClick={() => toggleTag(tag)}
+                className="modal-tag"
+                onClick={() => addTag(tag)}
               >
                 {tag}
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
+
       {allDays && allDays.length > 1 && (
         <div className="modal-field">
           <label>Giorno <span>(sposta attività)</span></label>
