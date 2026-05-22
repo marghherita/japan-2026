@@ -706,6 +706,9 @@ body {
 }
 
 .modal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 7px 14px;
   border-radius: 20px;
   border: 1.5px solid var(--border);
@@ -715,7 +718,7 @@ body {
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.12s, background 0.12s, color 0.12s;
-  line-height: 1.4;
+  line-height: 1;
   min-height: 38px;
 }
 
@@ -724,10 +727,10 @@ body {
 .modal-tags-active { margin-bottom: 8px; }
 
 .modal-tag-x {
-  margin-left: 5px;
   font-size: 12px;
   opacity: 0.6;
   font-style: normal;
+  line-height: 1;
 }
 
 .modal-tag-input-row {
